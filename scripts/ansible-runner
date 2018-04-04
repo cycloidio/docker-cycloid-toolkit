@@ -37,10 +37,10 @@ if [ -n "$EXTRA_VARS" ]; then
   EXTRA_ARGS="${EXTRA_ARGS} $(echo $EXTRA_VARS | jq -r 'to_entries[] | "-e \(.key)=\(.value | .)"' | tr '\n' ' ')"
 fi
 if [ -n "$TAGS" ]; then
-  EXTRA_ARGS="${EXTRA_ARGS} --tags '$(echo $TAGS | jq -r '. | join(",")')'"
+  EXTRA_ARGS="${EXTRA_ARGS} --tags $(echo $TAGS | jq -r '. | join(",")')"
 fi
 if [ -n "$SKIP_TAGS" ]; then
-  EXTRA_ARGS="${EXTRA_ARGS} --skip-tags '$(echo $SKIP_TAGS | jq -r '. | join(",")')'"
+  EXTRA_ARGS="${EXTRA_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
 fi
 
 # Setup ssh access
