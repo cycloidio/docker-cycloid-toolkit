@@ -1,0 +1,33 @@
+#!/bin/sh
+
+usage()
+{
+    echo "You should provide the following env vars :"
+    echo ""
+    echo "$0"
+    echo "  * VAULT_ROLEID"
+    echo "  * VAULT_SECRETID"
+    echo "  * (VAULT_LOGIN_URL) default: https://vault.cycloid.io/v1/auth/approle/login"
+    echo "  * (VARS_TF_PATH) default: vault-token/vars.tf"
+    echo ""
+    exit 1
+}
+
+if [ -n "$1" ]; then usage; fi
+
+# Set defaults
+export VARS_TF_PATH="${VARS_TF_PATH:-vault-token/vars.tf}"
+export VAULT_LOGIN_URL="${VAULT_LOGIN_URL:-https://vault.cycloid.io/v1/auth/approle/login}"
+
+# Check args
+if [ -z "$VAULT_ROLEID" ] ||
+[ -z "$VAULT_SECRETID" ]; then
+usage
+fi
+
+set -e
+
+TOKEN=$(curl --request POST --data "{\"role_id\":\"$VAULT_ROLEID\",\"secret_id\":\"$VAULT_SECRETID\"}" $VAULT_LOGIN_URL | jq -r '.auth.client_token')
+echo "vault_token: \"${TOKEN}\"" | tee -a $VARS_TF_PATH
+
+exit $?
