@@ -55,6 +55,41 @@ shared:
           - deploy
 ```
 
+## vault-approle-login
+
+This script use env vars configuration to run ansible playbook with ssh proxy on a bastion.
+
+Example of pipeline configuration :
+
+**YAML anchors**
+
+```
+shared:
+  - &vault-approle-login
+    task: vault-approle-login
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cycloid/cycloid-toolkit
+          tag: latest
+      run:
+        path: /usr/bin/vault-approle-login
+      outputs:
+      - name: vault-token
+        path: vault-token
+    params:
+      VAULT_ROLEID: ((vault.role_id))
+      VAULT_SECRETID: ((vault.secret_id))
+```
+
+**usage**
+
+```
+  - *vault-approle-login
+```
+
 # Push new image tag
 
 Tags are currently based on ansible version installed in the docker image.
