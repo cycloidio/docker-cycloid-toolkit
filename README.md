@@ -57,7 +57,8 @@ shared:
 
 ## vault-approle-login
 
-This script use env vars configuration to run ansible playbook with ssh proxy on a bastion.
+This script use env vars configuration to get a vault token using approle auth.
+The token is inserted in a tf variable file.
 
 Example of pipeline configuration :
 
