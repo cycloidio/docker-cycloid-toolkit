@@ -1,0 +1,25 @@
+#!/bin/sh
+
+usage()
+{
+    echo "You should provide the following env vars :"
+    echo ""
+    echo "$0"
+    echo "  * (TERRAFORM_METADATA_FILE) default : terraform/metadata"
+    echo "  * (OUTPUT_ANSIBLE_VAR_FILE) default : output-var/all. You might expect to force ansible-playbook/group_vars/all"
+    echo ""
+    exit 1
+}
+
+if [ -n "$1" ]; then usage; fi
+
+# Set defaults
+export TERRAFORM_METADATA_FILE="${TERRAFORM_METADATA_FILE:-terraform/metadata}"
+export OUTPUT_ANSIBLE_VAR_FILE="${OUTPUT_ANSIBLE_VAR_FILE:-output-var/all}"
+
+set -e
+
+mkdir -p $(dirname $OUTPUT_ANSIBLE_VAR_FILE)
+python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $TERRAFORM_METADATA_FILE | tee -a ansible-playbook/group_vars/all
+
+exit $?

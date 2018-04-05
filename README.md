@@ -91,6 +91,53 @@ shared:
   - *vault-approle-login
 ```
 
+## extract-terraform-outputs
+
+This script is mostly expected to be used by the `merge-stack-and-config` script.
+
+## merge-stack-and-config
+
+This script use env vars configuration to merge stack and config for Cycloid.io.
+
+**YAML anchors**
+
+```
+shared:
+  - &merge-stack-and-config
+    platform: linux
+    image_resource:
+      type: docker-image
+      source:
+        repository: cycloid/cycloid-toolkit
+        tag: latest
+    run:
+      path: /usr/bin/merge-stack-and-config
+    outputs:
+    - name: merged-stack
+      path: "merged-stack"
+
+```
+
+**usage**
+
+```
+    - task: merge-stack-and-config
+      config:
+        <<: *merge-stack-and-config
+        inputs:
+        - name: ((project))-config-ansible
+          path: "config"
+        - name: ((project))-stack-ansible
+          path: "stack"
+        # Provide terraform outputs to add them as ansible vars
+        - name: ((project))-terraform-apply
+          path: "terraform"
+      params:
+        CONFIG_SUB_PATH: ((project))/ansible
+        STACK_SUB_PATH: stack-((project))/ansible
+```
+
+
 # Push new image tag
 
 Tags are currently based on ansible version installed in the docker image.

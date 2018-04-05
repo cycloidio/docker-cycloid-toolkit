@@ -1,0 +1,53 @@
+#!/bin/sh
+
+usage()
+{
+    echo "You should provide the following env vars :"
+    echo ""
+    echo "$0"
+    echo "  * STACK_SUB_PATH"
+    echo "  * CONFIG_SUB_PATH"
+    echo "# _SUB_PATH refer to the root path of git. Expecting something like :"
+    echo "# CONFIG_SUB_PATH = ((project))/ansible or ((project))/terraform/((env)"
+    echo "# STACK_SUB_PATH = stack-((project))/ansible or stack-((project))/terraform"
+    echo ""
+    echo "  * (TERRAFORM_METADATA_FILE). Default lookup terraform/metadata. If find, will add vars into group_vars/all (input directory should be provided for ansible stack only)"
+    echo "  * (STACK_PATH). Expect to have git input named stack."
+    echo "  * (CONFIG_PATH). Default look for a git input named config."
+    echo "  * (MERGE_OUTPUT_PATH). Default merged-stack."
+    echo ""
+    exit 1
+}
+
+
+if [ -n "$1" ]; then usage; fi
+
+# Set defaults
+export MERGE_OUTPUT_PATH="${MERGE_OUTPUT_PATH:-merged-stack}"
+export STACK_PATH="${STACK_PATH:-stack}"
+export CONFIG_PATH="${CONFIG_PATH:-config}"
+export TERRAFORM_METADATA_FILE="${TERRAFORM_METADATA_FILE:-terraform/metadata}"
+
+# Check args
+if [ -z "$STACK_SUB_PATH" ] ||
+[ -z "$CONFIG_SUB_PATH" ]; then
+usage
+fi
+
+set -e
+
+rsync -av ${STACK_PATH}/${STACK_SUB_PATH}/ $MERGE_OUTPUT_PATH/
+if [ -d "${CONFIG_PATH}/${CONFIG_SUB_PATH}" ]; then
+  rsync -av ${CONFIG_PATH}/${CONFIG_SUB_PATH}/ $MERGE_OUTPUT_PATH/
+fi
+
+# In case of ansible run, we might have provided terraform output metadata file.
+# Lookup if we are in this case. And generate those vars for ansible. 
+if [ -f "$TERRAFORM_METADATA_FILE" ]; then
+  OUTPUT_ANSIBLE_VAR_FILE=${MERGE_OUTPUT_PATH}/group_vars/all extract-terraform-outputs
+fi
+
+echo "############ extract tag for the image : <stack_id>-<config_id>"
+echo "$(git --git-dir=$STACK_PATH/.git rev-parse --verify HEAD --short)-$(git --git-dir=$CONFIG_PATH/.git rev-parse --verify HEAD --short)" | tee $MERGE_OUTPUT_PATH/tag
+
+exit $?
