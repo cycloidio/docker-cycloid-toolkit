@@ -133,8 +133,8 @@ shared:
         - name: ((project))-terraform-apply
           path: "terraform"
       params:
-        CONFIG_SUB_PATH: ((project))/ansible
-        STACK_SUB_PATH: stack-((project))/ansible
+        CONFIG_PATH: ((project))/ansible
+        STACK_PATH: stack-((project))/ansible
 ```
 
 
