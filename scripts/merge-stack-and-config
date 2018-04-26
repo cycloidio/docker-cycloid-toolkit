@@ -36,6 +36,8 @@ fi
 
 set -e
 
+echo "############ Merging : ${STACK_ROOT_PATH}/${STACK_PATH}/ <- ${CONFIG_ROOT_PATH}/${CONFIG_PATH}/"
+
 rsync -av ${STACK_ROOT_PATH}/${STACK_PATH}/ $MERGE_OUTPUT_PATH/
 if [ -d "${CONFIG_ROOT_PATH}/${CONFIG_PATH}" ]; then
   rsync -av ${CONFIG_ROOT_PATH}/${CONFIG_PATH}/ $MERGE_OUTPUT_PATH/
@@ -44,6 +46,7 @@ fi
 # In case of ansible run, we might have provided terraform output metadata file.
 # Lookup if we are in this case. And generate those vars for ansible. 
 if [ -f "$TERRAFORM_METADATA_FILE" ]; then
+  echo "############ Extracting Terraform output -> group_vars/all extract-terraform-outputs"
   OUTPUT_ANSIBLE_VAR_FILE=${MERGE_OUTPUT_PATH}/group_vars/all extract-terraform-outputs
 fi
 
