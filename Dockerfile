@@ -54,7 +54,14 @@ RUN apk del \
 ADD files/ssh /root/.ssh
 RUN chmod -R 600 /root/.ssh
 
+# Install ec2 ami cleaner
+RUN git clone https://github.com/bonclay7/aws-amicleaner \
+    && cd aws-amicleaner \
+    && pip install -q -e . \
+    && pip install -q future
+
 # Default config
-# Contain ec2 dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
+# Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible/ /etc/ansible/
 COPY scripts/* /usr/bin/
+

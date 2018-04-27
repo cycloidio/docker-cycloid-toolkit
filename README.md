@@ -55,6 +55,41 @@ shared:
           - deploy
 ```
 
+## aws-ami-cleaner
+
+Provide a way to clean old Amazon AMI. Usually usefull whan you often build new AMI for your ASG.
+
+Example of pipeline configuration :
+
+**YAML anchors**
+
+```
+shared:
+  - &aws-ami-cleaner
+    task: aws-ami-cleaner
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cycloid/cycloid-toolkit
+          tag: latest
+      run:
+        path: /usr/bin/aws-ami-cleaner
+      params:
+        AWS_ACCESS_KEY_ID: ((aws_admin.access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws_admin.secret_key))
+        AWS_NAME_PATTERNS:
+          - projcet1-front-prod
+          - project1-batch-prod
+```
+
+**usage**
+
+```
+    - *aws-ami-cleaner
+```
+
 ## vault-approle-login
 
 This script use env vars configuration to get a vault token using approle auth.
