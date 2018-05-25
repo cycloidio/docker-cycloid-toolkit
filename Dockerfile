@@ -60,7 +60,6 @@ RUN git clone https://github.com/bonclay7/aws-amicleaner \
     && pip install -q -e . \
     && pip install -q future
 
-# Default config
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible/ /etc/ansible/
 COPY scripts/* /usr/bin/
