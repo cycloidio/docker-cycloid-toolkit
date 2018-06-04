@@ -20,7 +20,7 @@ if [ -n "$1" ]; then usage; fi
 export TERM=linux
 export TERMINFO=/etc/terminfo
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-export KEEP="${KEEP:1}"
+export KEEP="${KEEP:-1}"
 
 
 # Check args
