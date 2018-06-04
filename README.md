@@ -79,10 +79,11 @@ shared:
       params:
         AWS_ACCESS_KEY_ID: ((aws_admin.access_key))
         AWS_SECRET_ACCESS_KEY: ((aws_admin.secret_key))
-        AWS_DEFAULT_REGION: eu-west-1
-        AWS_NAME_PATTERNS:
-          - projcet1-front-prod
-          - project1-batch-prod
+        AWS_NAME_PATTERNS: >
+                  [
+                    "projcet1-front-prod",
+                    "project1-batch-prod"
+                  ]
 ```
 
 **usage**
