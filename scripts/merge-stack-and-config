@@ -15,6 +15,7 @@ usage()
     echo "  * (STACK_ROOT_PATH). Expect to have git input named stack."
     echo "  * (CONFIG_ROOT_PATH). Default look for a git input named config."
     echo "  * (MERGE_OUTPUT_PATH). Default merged-stack."
+    echo "  * (EXTRA_ANSIBLE_VARS). Extra variable for ansible to put in group_vars/all."
     echo ""
     exit 1
 }
@@ -48,6 +49,12 @@ fi
 if [ -f "$TERRAFORM_METADATA_FILE" ]; then
   echo "############ Extracting Terraform output -> group_vars/all extract-terraform-outputs"
   OUTPUT_ANSIBLE_VAR_FILE=${MERGE_OUTPUT_PATH}/group_vars/all extract-terraform-outputs
+fi
+
+if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
+  echo "############ Adding extra ansible vars to -> group_vars/all"
+  touch ${MERGE_OUTPUT_PATH}/group_vars/all
+  echo $EXTRA_ANSIBLE_VARS | jq -r 'to_entries[] | "\(.key): \(.value | .)"' >> ${MERGE_OUTPUT_PATH}/group_vars/all
 fi
 
 echo "############ extract tag for the image : <stack_id>-<config_id>"
