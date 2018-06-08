@@ -26,6 +26,10 @@ if [ -n "$1" ]; then usage; fi
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
+# Used to set a a default ssh multiplex. You can override it to disable it
+export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto -o ControlPersist=60s"}"
+
+export ANSIBLE_SSH_ARGS="${ANSIBLE_SSH_ARGS} ${EXTRA_ANSIBLE_SSH_ARGS}"
 
 # Check args
 if [ -z "$AWS_ACCESS_KEY_ID" ] ||
@@ -56,8 +60,9 @@ set -xe
 
 export ANSIBLE_FORCE_COLOR=true
 
+
 if [ -n "$BASTION_URL" ]; then
-  export ANSIBLE_SSH_ARGS='-o ProxyCommand="ssh -W %h:%p -q '${BASTION_URL}'"'
+  export ANSIBLE_SSH_ARGS="$ANSIBLE_SSH_ARGS"' -o ProxyCommand="ssh -W %h:%p -q '${BASTION_URL}'"'
   #echo "ansible_ssh_common_args: '-o ProxyCommand=\"ssh -W %h:%p -q ${BASTION_URL}\"'" >> $ANSIBLE_PLAYBOOK_PATH/group_vars/all
 fi
 
@@ -66,5 +71,9 @@ cd $ANSIBLE_PLAYBOOK_PATH
 if [ -f "requirements.yml" ]; then
     ansible-galaxy install -r requirements.yml --roles-path=roles -v
 fi
+
+echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
+
 ansible-playbook -u $ANSIBLE_REMOTE_USER --vault-password-file=.vault-password $ANSIBLE_PLAYBOOK_NAME --diff ${EXTRA_ARGS}
+
 exit $?
