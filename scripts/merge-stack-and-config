@@ -48,11 +48,13 @@ fi
 # Lookup if we are in this case. And generate those vars for ansible. 
 if [ -f "$TERRAFORM_METADATA_FILE" ]; then
   echo "############ Extracting Terraform output -> group_vars/all extract-terraform-outputs"
+  mkdir -p ${MERGE_OUTPUT_PATH}/group_vars
   OUTPUT_ANSIBLE_VAR_FILE=${MERGE_OUTPUT_PATH}/group_vars/all extract-terraform-outputs
 fi
 
 if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
   echo "############ Adding extra ansible vars to -> group_vars/all"
+  mkdir -p ${MERGE_OUTPUT_PATH}/group_vars
   touch ${MERGE_OUTPUT_PATH}/group_vars/all
   echo $EXTRA_ANSIBLE_VARS | jq -r 'to_entries[] | "\(.key): \(.value | .)"' >> ${MERGE_OUTPUT_PATH}/group_vars/all
 fi
