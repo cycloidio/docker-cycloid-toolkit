@@ -17,6 +17,8 @@ usage()
     echo "  * (ANSIBLE_PLAYBOOK_NAME) default : site.yml"
     echo "  * (ANSIBLE_PLAYBOOK_PATH) default : ansible-playbook"
     echo "  * (ANSIBLE_REMOTE_USER) default : admin"
+    echo "  * (ANSIBLE_GALAXY_EXTRA_ARGS)"
+    echo "  * (FORCE_ANSIBLE_GALAXY) default false. true to enable"
     echo ""
     exit 1
 }
@@ -26,10 +28,11 @@ if [ -n "$1" ]; then usage; fi
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
+export FORCE_ANSIBLE_GALAXY="${FORCE_ANSIBLE_GALAXY:-false}"
 # Used to set a a default ssh multiplex. You can override it to disable it
 export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto -o ControlPersist=60s"}"
-
 export ANSIBLE_SSH_ARGS="${ANSIBLE_SSH_ARGS} ${EXTRA_ANSIBLE_SSH_ARGS}"
+export ANSIBLE_FORCE_COLOR=true
 
 # Check args
 if [ -z "$AWS_ACCESS_KEY_ID" ] ||
@@ -38,7 +41,7 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] ||
 [ -z "$ANSIBLE_VAULT_PASSWORD" ]; then
 usage
 fi
-
+t
 # Construct vars
 if [ -n "$EXTRA_VARS" ]; then
   EXTRA_ARGS="${EXTRA_ARGS} $(echo $EXTRA_VARS | jq -r 'to_entries[] | "-e \(.key)=\(.value | .)"' | tr '\n' ' ')"
@@ -50,6 +53,10 @@ if [ -n "$SKIP_TAGS" ]; then
   EXTRA_ARGS="${EXTRA_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
 fi
 
+if [ "$FORCE_ANSIBLE_GALAXY" == "true" ]; then
+  ANSIBLE_GALAXY_EXTRA_ARGS="${ANSIBLE_GALAXY_EXTRA_ARGS} --force"
+fi
+
 # Setup ssh access
 echo "${BASTION_PRIVATE_KEY}" > /root/.ssh/id_rsa
 chmod 600  /root/.ssh/id_rsa
@@ -57,9 +64,6 @@ echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
 #export DEFAULT_VAULT_PASSWORD_FILE="$ANSIBLE_PLAYBOOK_PATH/.vault-password"
 
 set -xe
-
-export ANSIBLE_FORCE_COLOR=true
-
 
 if [ -n "$BASTION_URL" ]; then
   export ANSIBLE_SSH_ARGS="$ANSIBLE_SSH_ARGS"' -o ProxyCommand="ssh -W %h:%p -q '${BASTION_URL}'"'
@@ -69,7 +73,7 @@ fi
 cd $ANSIBLE_PLAYBOOK_PATH
 
 if [ -f "requirements.yml" ]; then
-    ansible-galaxy install -r requirements.yml --roles-path=roles -v
+    ansible-galaxy install -r requirements.yml --roles-path=roles -v ${ANSIBLE_GALAXY_EXTRA_ARGS}
 fi
 
 echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
