@@ -41,7 +41,7 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] ||
 [ -z "$ANSIBLE_VAULT_PASSWORD" ]; then
 usage
 fi
-t
+
 # Construct vars
 if [ -n "$EXTRA_VARS" ]; then
   EXTRA_ARGS="${EXTRA_ARGS} $(echo $EXTRA_VARS | jq -r 'to_entries[] | "-e \(.key)=\(.value | .)"' | tr '\n' ' ')"
