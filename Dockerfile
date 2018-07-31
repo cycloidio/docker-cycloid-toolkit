@@ -60,6 +60,12 @@ RUN git clone https://github.com/bonclay7/aws-amicleaner \
     && pip install -q -e . \
     && pip install -q future
 
+#TMP fix for https://github.com/boto/boto/issues/3783
+# eu-west-3 region is not supported by boto, we need to override the aws endpoints with the existing new regions
+RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/endpoints.json > /etc/endpoints_new.json \
+    && pip install --upgrade boto \
+    && cp /etc/endpoints_new.json /usr/lib/python2.7/site-packages/boto/endpoints.json
+
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible/ /etc/ansible/
 COPY scripts/* /usr/bin/

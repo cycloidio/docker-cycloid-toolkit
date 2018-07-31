@@ -14,6 +14,7 @@ usage()
     echo "  * (SKIP_TAGS)"
     echo "  * (EXTRA_ARGS)"
     echo "  * (EXTRA_VARS) as a json dict."
+    echo "  * (AWS_DEFAULT_REGION) default : eu-west-1"
     echo "  * (ANSIBLE_PLAYBOOK_NAME) default : site.yml"
     echo "  * (ANSIBLE_PLAYBOOK_PATH) default : ansible-playbook"
     echo "  * (ANSIBLE_REMOTE_USER) default : admin"
@@ -25,6 +26,7 @@ usage()
 if [ -n "$1" ]; then usage; fi
 
 # Set defaults
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"

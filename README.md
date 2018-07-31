@@ -45,6 +45,7 @@ shared:
         AWS_ACCESS_KEY_ID: ((aws_admin.access_key))
         AWS_SECRET_ACCESS_KEY: ((aws_admin.secret_key))
         EXTRA_ARGS: "--limit tag_role_front"
+        AWS_DEFAULT_REGION: eu-west-1
         ANSIBLE_PLAYBOOK_PATH: ansible-playbook
         ANSIBLE_PLAYBOOK_NAME: ((customer)).yml
         EXTRA_VARS:
