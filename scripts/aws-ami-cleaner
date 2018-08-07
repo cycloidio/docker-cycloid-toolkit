@@ -9,7 +9,7 @@ usage()
     echo "  * AWS_SECRET_ACCESS_KEY"
     echo "  * AWS_NAME_PATTERNS: Array of pattern of AMI name."
     echo "  * (AWS_DEFAULT_REGION)"
-    echo "  * (KEEP): how many old version of the ami to keep. default 1"
+    echo "  * (KEEP): how many old version of the ami to keep. default 3"
     echo ""
     exit 1
 
@@ -20,7 +20,7 @@ if [ -n "$1" ]; then usage; fi
 export TERM=linux
 export TERMINFO=/etc/terminfo
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-export KEEP="${KEEP:-1}"
+export KEEP="${KEEP:3}"
 
 
 # Check args
