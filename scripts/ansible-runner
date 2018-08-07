@@ -35,6 +35,7 @@ export FORCE_ANSIBLE_GALAXY="${FORCE_ANSIBLE_GALAXY:-false}"
 export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto -o ControlPersist=60s"}"
 export ANSIBLE_SSH_ARGS="${ANSIBLE_SSH_ARGS} ${EXTRA_ANSIBLE_SSH_ARGS}"
 export ANSIBLE_FORCE_COLOR=true
+export ANSIBLE_STDOUT_CALLBACK="${ANSIBLE_STDOUT_CALLBACK:-actionable}"
 
 # Check args
 if [ -z "$AWS_ACCESS_KEY_ID" ] ||
