@@ -3,3 +3,4 @@ awscli
 boto
 boto3
 pyOpenSSL==16.2.0
+openshift

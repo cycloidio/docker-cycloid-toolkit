@@ -82,8 +82,8 @@ shared:
         AWS_SECRET_ACCESS_KEY: ((aws_admin.secret_key))
         AWS_NAME_PATTERNS: >
                   [
-                    "projcet1-front-prod",
-                    "project1-batch-prod"
+                    "projcet1_front_prod",
+                    "project1_batch_prod"
                   ]
 ```
 
