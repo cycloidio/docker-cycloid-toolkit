@@ -119,11 +119,11 @@ shared:
         AWS_ACCESS_KEY_ID: ((aws_access_key))
         AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
         AWS_DEFAULT_REGION: ((aws_default_region))
-        REGION=((aws_default_region))
-        DRYRUN=False
-        IMAGES_TO_KEEP=2
-        REPOSITORIES_FILTER='foo bar'
-        IGNORE_TAGS_REGEX='dev|staging|prod'
+        REGION: ((aws_default_region))
+        DRYRUN: False
+        IMAGES_TO_KEEP: 2
+        REPOSITORIES_FILTER: 'foo bar'
+        IGNORE_TAGS_REGEX: 'dev|staging|prod'
 ```
 
 **usage**
