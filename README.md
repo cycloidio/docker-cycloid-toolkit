@@ -42,8 +42,8 @@ shared:
         BASTION_URL: ((bastion_url))
         BASTION_PRIVATE_KEY: ((bastion_ssh.ssh_key))
         ANSIBLE_VAULT_PASSWORD: ((ansible))
-        AWS_ACCESS_KEY_ID: ((aws_admin.access_key))
-        AWS_SECRET_ACCESS_KEY: ((aws_admin.secret_key))
+        AWS_ACCESS_KEY_ID: ((aws_access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
         EXTRA_ARGS: "--limit tag_role_front"
         AWS_DEFAULT_REGION: eu-west-1
         ANSIBLE_PLAYBOOK_PATH: ansible-playbook
@@ -78,8 +78,8 @@ shared:
       run:
         path: /usr/bin/aws-ami-cleaner
       params:
-        AWS_ACCESS_KEY_ID: ((aws_admin.access_key))
-        AWS_SECRET_ACCESS_KEY: ((aws_admin.secret_key))
+        AWS_ACCESS_KEY_ID: ((aws_access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
         AWS_NAME_PATTERNS: >
                   [
                     "projcet1_front_prod",
@@ -92,6 +92,46 @@ shared:
 ```
     - *aws-ami-cleaner
 ```
+
+
+## aws-ecr-cleaner
+
+Provide a way to clean old docker images from ECR. Usually usefull whan you often build new image for your ecs.
+
+Example of pipeline configuration :
+
+**YAML anchors**
+
+```
+shared:
+  - &aws-ecr-cleaner
+    task: aws-ecr-cleaner
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cycloid/cycloid-toolkit
+          tag: latest
+      run:
+        path: /usr/bin/aws-ecr-cleaner
+      params:
+        AWS_ACCESS_KEY_ID: ((aws_access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
+        AWS_DEFAULT_REGION: ((aws_default_region))
+        REGION=((aws_default_region))
+        DRYRUN=False
+        IMAGES_TO_KEEP=2
+        REPOSITORIES_FILTER='foo bar'
+        IGNORE_TAGS_REGEX='dev|staging|prod'
+```
+
+**usage**
+
+```
+    - *aws-ecr-cleaner
+```
+
 
 ## vault-approle-login
 

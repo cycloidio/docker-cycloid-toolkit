@@ -60,6 +60,10 @@ RUN git clone https://github.com/bonclay7/aws-amicleaner \
     && pip install -q -e . \
     && pip install -q future
 
+# Install ecr image cleaner
+RUN wget https://raw.githubusercontent.com/cycloidio/ecr-cleanup-lambda/master/main.py -O /usr/bin/aws-ecr-cleaner \
+    && chmod +x /usr/bin/aws-ecr-cleaner
+
 #TMP fix for https://github.com/boto/boto/issues/3783
 # eu-west-3 region is not supported by boto, we need to override the aws endpoints with the existing new regions
 RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/endpoints.json > /etc/endpoints_new.json \
@@ -69,4 +73,3 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible/ /etc/ansible/
 COPY scripts/* /usr/bin/
-
