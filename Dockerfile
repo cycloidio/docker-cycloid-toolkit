@@ -61,7 +61,7 @@ RUN git clone https://github.com/bonclay7/aws-amicleaner \
     && pip install -q future
 
 # Install ecr image cleaner
-RUN wget https://raw.githubusercontent.com/cycloidio/ecr-cleanup-lambda/master/main.py -O /usr/bin/aws-ecr-cleaner \
+RUN curl https://raw.githubusercontent.com/cycloidio/ecr-cleanup-lambda/master/main.py > /usr/bin/aws-ecr-cleaner \
     && chmod +x /usr/bin/aws-ecr-cleaner
 
 #TMP fix for https://github.com/boto/boto/issues/3783
