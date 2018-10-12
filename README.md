@@ -122,7 +122,10 @@ shared:
         DRYRUN: False
         IMAGES_TO_KEEP: 2
         REPOSITORIES_FILTER: 'foo bar'
-        IGNORE_TAGS_REGEX: 'dev|staging|prod'
+        # For a global clean with exclude:
+        #IGNORE_TAGS_REGEX: 'dev|staging|prod|latest-'
+        # For a clean on specific tag/env
+        FILTER_TAGS_REGEX: '^dev-'
 ```
 
 **usage**
