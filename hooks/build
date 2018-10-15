@@ -1,0 +1,14 @@
+#!/bin/bash
+
+export DOCKERFILE_PATH="${DOCKERFILE_PATH:-Dockerfile}"
+
+echo "# Received : $SOURCE_COMMIT"
+
+echo "=> Building latest"
+docker build -f $DOCKERFILE_PATH -t $IMAGE_NAME .
+
+for version in $(cat .ansible_versions); do
+    echo "=> Building $version"
+    sed -i "s/ansible==.*/ansible==${version}/" requirements.txt
+    docker build -f $DOCKERFILE_PATH -t $DOCKER_REPO:v$version .
+done

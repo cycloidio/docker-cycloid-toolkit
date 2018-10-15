@@ -4,7 +4,6 @@ LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
 # Base packages
-# Build dependencies
 RUN ln -s /lib /lib64 \
     && \
         apk --upgrade add --no-cache \

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export DOCKERFILE_PATH="${DOCKERFILE_PATH:-Dockerfile}"
+
+# Already done by push
+# docker push $IMAGE_NAME
+
+for version in $(cat .ansible_versions); do
+    docker push $DOCKER_REPO:v$version
+done
