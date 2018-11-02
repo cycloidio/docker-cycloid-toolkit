@@ -24,6 +24,7 @@ RUN ln -s /lib /lib64 \
             ca-certificates \
             openssh-client \
             rsync \
+            patch \
     && \
         apk --upgrade add --no-cache --virtual \
             build-dependencies \
@@ -72,3 +73,8 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible/ /etc/ansible/
 COPY scripts/* /usr/bin/
+
+# Patching ansible https://github.com/ansible/ansible/pull/47867
+#  diff -Naur aws_s3.py.orig aws_s3.py > patch
+#  editdiff patch
+RUN patch -i /etc/ansible/patch_s3_object_version $(python -c "import ansible; print '%s/modules/cloud/amazon/aws_s3.py' % ansible.__path__[0]")

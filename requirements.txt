@@ -1,3 +1,4 @@
+# Used to define the docker latest version
 ansible==2.4.3
 awscli
 boto

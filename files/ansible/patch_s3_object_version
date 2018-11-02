@@ -1,0 +1,11 @@
+--- aws_s3.py.orig      2018-11-02 08:46:23.004951501 +0100
++++ aws_s3.py   2018-11-02 08:47:35.244943155 +0100
+@@ -459,4 +459,8 @@
+     for x in range(0, retries + 1):
+         try:
+             s3.download_file(bucket, obj, dest)
++            if version:
++                s3.download_file(bucket, obj, dest, ExtraArgs={'VersionId': version})
++            else:
++                s3.download_file(bucket, obj, dest)
+             module.exit_json(msg="GET operation complete", changed=True)

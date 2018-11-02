@@ -5,6 +5,11 @@ export DOCKERFILE_PATH="${DOCKERFILE_PATH:-Dockerfile}"
 # Already done by push
 # docker push $IMAGE_NAME
 
-for version in $(cat .ansible_versions); do
-    docker push $DOCKER_REPO:v$version
+IFS=$'\n'
+for line in $(cat .ansible_versions); do
+    version=${line% *}
+    tag=v${line#* }
+    echo "=> Pushing $tag"
+    docker push $DOCKER_REPO:$tag
 done
+unset IFS

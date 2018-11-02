@@ -7,8 +7,12 @@ echo "# Received : $SOURCE_COMMIT"
 echo "=> Building latest"
 docker build -f $DOCKERFILE_PATH -t $IMAGE_NAME .
 
-for version in $(cat .ansible_versions); do
-    echo "=> Building $version"
+IFS=$'\n'
+for line in $(cat .ansible_versions); do
+    version=${line% *}
+    tag=v${line#* }
+    echo "=> Building $tag"
     sed -i "s/ansible==.*/ansible==${version}/" requirements.txt
-    docker build -f $DOCKERFILE_PATH -t $DOCKER_REPO:v$version .
+    docker build -f $DOCKERFILE_PATH -t $DOCKER_REPO:$tag .
 done
+unset IFS
