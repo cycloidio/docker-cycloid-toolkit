@@ -123,7 +123,7 @@ shared:
         IMAGES_TO_KEEP: 2
         REPOSITORIES_FILTER: 'foo bar'
         # For a global clean with exclude:
-        #IGNORE_TAGS_REGEX: 'dev|staging|prod|latest-'
+        IGNORE_TAGS_REGEX: 'dev|staging|prod|latest-'
         # For a clean on specific tag/env
         FILTER_TAGS_REGEX: '^dev-'
 ```
