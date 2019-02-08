@@ -39,9 +39,16 @@ set -e
 
 echo "############ Merging : ${STACK_ROOT_PATH}/${STACK_PATH}/ <- ${CONFIG_ROOT_PATH}/${CONFIG_PATH}/"
 
+if ! [ -d "${STACK_ROOT_PATH}/${STACK_PATH}" ]; then
+  echo "/!\ ERROR : the stack directory ${STACK_ROOT_PATH}/${STACK_PATH}/ does not exist"
+  exit 1
+fi
+
 rsync -av ${STACK_ROOT_PATH}/${STACK_PATH}/ $MERGE_OUTPUT_PATH/
 if [ -d "${CONFIG_ROOT_PATH}/${CONFIG_PATH}" ]; then
   rsync -av ${CONFIG_ROOT_PATH}/${CONFIG_PATH}/ $MERGE_OUTPUT_PATH/
+else
+  echo "! Warning, the config directory $CONFIG_ROOT_PATH/${CONFIG_PATH} does not exist"
 fi
 
 # In case of ansible run, we might have provided terraform output metadata file.
