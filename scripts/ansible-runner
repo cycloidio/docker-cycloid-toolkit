@@ -19,7 +19,7 @@ usage()
     echo "  * (ANSIBLE_PLAYBOOK_PATH) default : ansible-playbook"
     echo "  * (ANSIBLE_REMOTE_USER) default : admin"
     echo "  * (ANSIBLE_GALAXY_EXTRA_ARGS)"
-    echo "  * (FORCE_ANSIBLE_GALAXY) default false. true to enable"
+    echo "  * (ANSIBLE_FORCE_GALAXY) default false. true to enable"
     echo ""
     exit 1
 }
@@ -30,7 +30,7 @@ export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
-export FORCE_ANSIBLE_GALAXY="${FORCE_ANSIBLE_GALAXY:-false}"
+export ANSIBLE_FORCE_GALAXY="${ANSIBLE_FORCE_GALAXY:-false}"
 export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
 # Used to set a a default ssh multiplex. You can override it to disable it
 export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto -o ControlPersist=60s"}"
@@ -59,7 +59,7 @@ if [ -n "$SKIP_TAGS" ]; then
   EXTRA_ARGS="${EXTRA_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
 fi
 
-if [ "$FORCE_ANSIBLE_GALAXY" == "true" ]; then
+if [ "$ANSIBLE_FORCE_GALAXY" == "true" ]; then
   ANSIBLE_GALAXY_EXTRA_ARGS="${ANSIBLE_GALAXY_EXTRA_ARGS} --force"
 fi
 
