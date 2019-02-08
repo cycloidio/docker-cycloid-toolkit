@@ -7,8 +7,8 @@ usage()
     echo "$0"
     echo "  * AWS_ACCESS_KEY_ID"
     echo "  * AWS_SECRET_ACCESS_KEY"
-    echo "  * BASTION_PRIVATE_KEY"
-    echo "  * ANSIBLE_VAULT_PASSWORD"
+    echo "  * SSH_PRIVATE_KEY"
+    echo "  * (ANSIBLE_VAULT_PASSWORD)"
     echo "  * (BASTION_URL)"
     echo "  * (TAGS)"
     echo "  * (SKIP_TAGS)"
@@ -31,17 +31,20 @@ export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
 export FORCE_ANSIBLE_GALAXY="${FORCE_ANSIBLE_GALAXY:-false}"
+export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
 # Used to set a a default ssh multiplex. You can override it to disable it
 export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto -o ControlPersist=60s"}"
 export ANSIBLE_SSH_ARGS="${ANSIBLE_SSH_ARGS} ${EXTRA_ANSIBLE_SSH_ARGS}"
 export ANSIBLE_FORCE_COLOR=true
 export ANSIBLE_STDOUT_CALLBACK="${ANSIBLE_STDOUT_CALLBACK:-actionable}"
 
+# Keep compatibility with old naming of ssh key
+export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
+
 # Check args
 if [ -z "$AWS_ACCESS_KEY_ID" ] ||
 [ -z "$AWS_SECRET_ACCESS_KEY" ] ||
-[ -z "$BASTION_PRIVATE_KEY" ] ||
-[ -z "$ANSIBLE_VAULT_PASSWORD" ]; then
+[ -z "$SSH_PRIVATE_KEY" ]; then
 usage
 fi
 
@@ -61,7 +64,7 @@ if [ "$FORCE_ANSIBLE_GALAXY" == "true" ]; then
 fi
 
 # Setup ssh access
-echo "${BASTION_PRIVATE_KEY}" > /root/.ssh/id_rsa
+echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
 chmod 600  /root/.ssh/id_rsa
 echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
 #export DEFAULT_VAULT_PASSWORD_FILE="$ANSIBLE_PLAYBOOK_PATH/.vault-password"

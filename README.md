@@ -40,7 +40,7 @@ shared:
       <<: *run-ansible-from-bastion
       params:
         BASTION_URL: ((bastion_url))
-        BASTION_PRIVATE_KEY: ((bastion_ssh.ssh_key))
+        SSH_PRIVATE_KEY: ((bastion_ssh.ssh_key))
         ANSIBLE_VAULT_PASSWORD: ((ansible))
         AWS_ACCESS_KEY_ID: ((aws_access_key))
         AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
