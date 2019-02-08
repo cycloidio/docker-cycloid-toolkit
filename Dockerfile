@@ -27,6 +27,7 @@ RUN ln -s /lib /lib64 \
             openssh-client \
             rsync \
             patch \
+            gettext \
     && \
         apk --upgrade add --no-cache --virtual \
             build-dependencies \
