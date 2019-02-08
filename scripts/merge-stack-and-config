@@ -5,17 +5,16 @@ usage()
     echo "You should provide the following env vars :"
     echo ""
     echo "$0"
-    echo "  * STACK_PATH"
-    echo "  * CONFIG_PATH"
-    echo "# _SUB_PATH refer to the root path of git. Expecting something like :"
-    echo "# CONFIG_PATH = ((project))/ansible or ((project))/terraform/((env)"
-    echo "# STACK_PATH = stack-((project))/ansible or stack-((project))/terraform"
+    echo "  * STACK_PATH : Path of the stack usually stack-name/ansible or stack-name/terraform"
+    echo "  * CONFIG_PATH : Path of the config to merge with, usually ((project))/ansible or ((project))/terraform/((env)"
     echo ""
     echo "  * (TERRAFORM_METADATA_FILE). Default lookup terraform/metadata. If find, will add vars into group_vars/all (input directory should be provided for ansible stack only)"
     echo "  * (STACK_ROOT_PATH). Expect to have git input named stack."
     echo "  * (CONFIG_ROOT_PATH). Default look for a git input named config."
     echo "  * (MERGE_OUTPUT_PATH). Default merged-stack."
     echo "  * (EXTRA_ANSIBLE_VARS). Extra variable for ansible to put in group_vars/all."
+    echo "  * (EXTRA_PATH). Additionnals paths to use during the merge using rsync format eg foo/"
+    echo "  * (DEBUG). Display the result at the end of the merge"
     echo ""
     exit 1
 }
@@ -51,6 +50,22 @@ else
   echo "! Warning, the config directory $CONFIG_ROOT_PATH/${CONFIG_PATH} does not exist"
 fi
 
+
+# Merge extra additionnals paths specified in the pipeline :
+# EXTRA_PATH:
+#  - foo/
+# Those path are expected to be send be the pipeline as a json array
+if [ -n "$EXTRA_PATH" ]; then
+  for ADDITIONAL_PATH in $(python -c "import json, os; print '\n'.join([ x for x in json.loads(os.getenv('EXTRA_PATH', '{}'))])"); do
+    echo "############ Merging : extra path ${STACK_ROOT_PATH}/${STACK_PATH}/ <- $ADDITIONAL_PATH"
+    if [ -d "$ADDITIONAL_PATH" ]; then
+      rsync -av $ADDITIONAL_PATH $MERGE_OUTPUT_PATH/
+    else
+      echo "! Warning, the extra directory $ADDITIONAL_PATH does not exist"
+    fi
+  done
+fi
+
 # In case of ansible run, we might have provided terraform output metadata file.
 # Lookup if we are in this case. And generate those vars for ansible. 
 if [ -f "$TERRAFORM_METADATA_FILE" ]; then
@@ -63,10 +78,15 @@ if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
   echo "############ Adding extra ansible vars to -> group_vars/all"
   mkdir -p ${MERGE_OUTPUT_PATH}/group_vars
   touch ${MERGE_OUTPUT_PATH}/group_vars/all
-  python -c "import sys, json, os,yaml; print '\n'.join([ '%s: \"%s\"' % (k,v) for k, v in json.loads(os.environ['EXTRA_ANSIBLE_VARS'].replace('\\n','\\\\\\\n')).items()])" >> ${MERGE_OUTPUT_PATH}/group_vars/all
+  python -c "import json, os, yaml; print '\n'.join([ '%s: \"%s\"' % (k,v) for k, v in json.loads(os.environ['EXTRA_ANSIBLE_VARS'].replace('\\n','\\\\\\\n')).items()])" >> ${MERGE_OUTPUT_PATH}/group_vars/all
 fi
 
 echo "############ extract tag for the image : <stack_id>-<config_id>"
 echo "$(git --git-dir=$STACK_ROOT_PATH/.git rev-parse --verify HEAD --short)-$(git --git-dir=$CONFIG_ROOT_PATH/.git rev-parse --verify HEAD --short)" | tee $MERGE_OUTPUT_PATH/tag
+
+if [ -n "$DEBUG" ]; then
+  echo "############ DEBUG, content of $MERGE_OUTPUT_PATH"
+  find $MERGE_OUTPUT_PATH
+fi
 
 exit $?
