@@ -10,6 +10,7 @@ RUN ln -s /lib /lib64 \
     && \
         apk --upgrade add --no-cache \
             bash \
+            sed \
             git \
             sudo \
             curl \
