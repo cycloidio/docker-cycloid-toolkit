@@ -12,8 +12,8 @@ usage()
     echo "  * (BASTION_URL)"
     echo "  * (TAGS)"
     echo "  * (SKIP_TAGS)"
-    echo "  * (EXTRA_ARGS)"
-    echo "  * (EXTRA_VARS) as a json dict."
+    echo "  * (EXTRA_ANSIBLE_ARGS)"
+    echo "  * (EXTRA_ANSIBLE_VARS) as a json dict."
     echo "  * (AWS_DEFAULT_REGION) default : eu-west-1"
     echo "  * (ANSIBLE_PLAYBOOK_NAME) default : site.yml"
     echo "  * (ANSIBLE_PLAYBOOK_PATH) default : ansible-playbook"
@@ -44,6 +44,8 @@ export EC2_VPC_DESTINATION_VARIABLE="${EC2_VPC_DESTINATION_VARIABLE:-private_ip_
 
 # Keep compatibility with old naming of ssh key
 export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
+export EXTRA_ANSIBLE_VARS="${EXTRA_ANSIBLE_VARS:-$EXTRA_VARS}"
+export EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS:-$EXTRA_ARGS}"
 
 # Check args
 if [ -z "$AWS_ACCESS_KEY_ID" ] ||
@@ -53,14 +55,14 @@ usage
 fi
 
 # Construct vars
-if [ -n "$EXTRA_VARS" ]; then
-  EXTRA_ARGS="${EXTRA_ARGS} $(echo $EXTRA_VARS | jq -r 'to_entries[] | "-e \(.key)=\(.value | .)"' | tr '\n' ' ')"
+if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
+  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} $(echo $EXTRA_ANSIBLE_VARS | jq -r 'to_entries[] | "-e \(.key)=\(.value | .)"' | tr '\n' ' ')"
 fi
 if [ -n "$TAGS" ]; then
-  EXTRA_ARGS="${EXTRA_ARGS} --tags $(echo $TAGS | jq -r '. | join(",")')"
+  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} --tags $(echo $TAGS | jq -r '. | join(",")')"
 fi
 if [ -n "$SKIP_TAGS" ]; then
-  EXTRA_ARGS="${EXTRA_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
+  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
 fi
 
 if [ "$ANSIBLE_FORCE_GALAXY" == "true" ]; then
@@ -91,6 +93,6 @@ fi
 
 echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
 
-ansible-playbook -u $ANSIBLE_REMOTE_USER --vault-password-file=.vault-password $ANSIBLE_PLAYBOOK_NAME --diff ${EXTRA_ARGS}
+ansible-playbook -u $ANSIBLE_REMOTE_USER --vault-password-file=.vault-password $ANSIBLE_PLAYBOOK_NAME --diff ${EXTRA_ANSIBLE_ARGS}
 
 exit $?

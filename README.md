@@ -44,11 +44,11 @@ shared:
         ANSIBLE_VAULT_PASSWORD: ((ansible))
         AWS_ACCESS_KEY_ID: ((aws_access_key))
         AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
-        EXTRA_ARGS: "--limit tag_role_front"
+        EXTRA_ANSIBLE_ARGS: "--limit tag_role_front"
         AWS_DEFAULT_REGION: eu-west-1
         ANSIBLE_PLAYBOOK_PATH: ansible-playbook
         ANSIBLE_PLAYBOOK_NAME: ((customer)).yml
-        EXTRA_VARS:
+        EXTRA_ANSIBLE_VARS:
           customer: ((customer))
           project: ((project))
           env: ((env))
