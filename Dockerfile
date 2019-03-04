@@ -56,7 +56,7 @@ ADD files/ssh /root/.ssh
 RUN chmod -R 600 /root/.ssh
 
 # Install ec2 ami cleaner
-RUN git clone https://github.com/bonclay7/aws-amicleaner \
+RUN git clone https://github.com/cycloidio/aws-amicleaner \
     && cd aws-amicleaner \
     && pip install --no-cache-dir -q -e . \
     && pip install --no-cache-dir -q future \
