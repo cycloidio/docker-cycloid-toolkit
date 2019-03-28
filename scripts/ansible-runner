@@ -2,27 +2,26 @@
 
 usage()
 {
-    echo "You should provide the following env vars :"
-    echo ""
+    echo 'You should provide the following env vars :'
+    echo ''
     echo "$0"
-    echo "  * AWS_ACCESS_KEY_ID"
-    echo "  * AWS_SECRET_ACCESS_KEY"
-    echo "  * SSH_PRIVATE_KEY"
-    echo "  * (ANSIBLE_VAULT_PASSWORD)"
-    echo "  * (BASTION_URL)"
-    echo "  * (TAGS)"
-    echo "  * (SKIP_TAGS)"
-    echo "  * (EXTRA_ANSIBLE_ARGS)"
-    echo "  * (EXTRA_ANSIBLE_VARS) as a json dict."
-    echo "  * (AWS_DEFAULT_REGION) default : eu-west-1"
-    echo "  * (ANSIBLE_PLAYBOOK_NAME) default : site.yml"
-    echo "  * (ANSIBLE_PLAYBOOK_PATH) default : ansible-playbook"
-    echo "  * (ANSIBLE_REMOTE_USER) default : admin"
-    echo "  * (ANSIBLE_GALAXY_EXTRA_ARGS)"
-    echo "  * (ANSIBLE_FORCE_GALAXY) default false. true to enable"
-    echo "ec2.py vars :"
-    echo "  * (EC2_VPC_DESTINATION_VARIABLE) default private_ip_address see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini"
-    echo ""
+    echo '  * `AWS_ACCESS_KEY_ID` : Used by Amazon EC2 dynamic inventory'
+    echo '  * `AWS_SECRET_ACCESS_KEY`: Used by Amazon EC2 dynamic inventory'
+    echo '  * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers'
+    echo '  * `(BASTION_URL)` : SSH url of the bastion server. Exemple : `admin@myserver.com`'
+    echo '  * `(TAGS)`: Only run plays and tasks tagged with these values'
+    echo '  * `(SKIP_TAGS)` : only run plays and tasks whose tags do not match these values'
+    echo '  * `(EXTRA_ANSIBLE_ARGS)` Additional ansible-playbook arguments'
+    echo '  * `(EXTRA_ANSIBLE_VARS)` json dict format. Ansible extra-vars, set additional variables'
+    echo '  * `(ANSIBLE_REMOTE_USER)` default : `admin` Ansible remote user'
+    echo '  * `(ANSIBLE_GALAXY_EXTRA_ARGS)` Additional ansible-galaxy arguments'
+    echo '  * `(ANSIBLE_VAULT_PASSWORD)` : Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files'
+    echo '  * `(ANSIBLE_FORCE_GALAXY)` default `false`. Force to run Ansible galaxy to updated eventual cached ansible roles'
+    echo '  * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml` Name of the ansible playbook to run'
+    echo '  * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook` Path of the ansible playbook to run'
+    echo 'ec2.py vars :'
+    echo '  * (EC2_VPC_DESTINATION_VARIABLE) default private_ip_address see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini'
+    echo ''
     exit 1
 }
 if [ -n "$1" ]; then usage; fi

@@ -10,6 +10,24 @@ Docker image which contain tools and a scripts for cycloid.io deployment pipelin
 
 This script use env vars configuration to run ansible playbook with ssh proxy on a bastion.
 
+./ansible-runner
+  * `AWS_ACCESS_KEY_ID` : Used by Amazon EC2 dynamic inventory
+  * `AWS_SECRET_ACCESS_KEY`: Used by Amazon EC2 dynamic inventory
+  * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers
+  * `(BASTION_URL)` : SSH url of the bastion server. Exemple : `admin@myserver.com`
+  * `(TAGS)`: Only run plays and tasks tagged with these values
+  * `(SKIP_TAGS)` : only run plays and tasks whose tags do not match these values
+  * `(EXTRA_ANSIBLE_ARGS)` Additional ansible-playbook arguments
+  * `(EXTRA_ANSIBLE_VARS)` json dict format. Ansible extra-vars, set additional variables
+  * `(ANSIBLE_REMOTE_USER)` default : `admin` Ansible remote user
+  * `(ANSIBLE_GALAXY_EXTRA_ARGS)` Additional ansible-galaxy arguments
+  * `(ANSIBLE_VAULT_PASSWORD)` : Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files
+  * `(ANSIBLE_FORCE_GALAXY)` default `false`. Force to run Ansible galaxy to updated eventual cached ansible roles
+  * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml` Name of the ansible playbook to run
+  * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook` Path of the ansible playbook to run
+ec2.py vars :
+  * (EC2_VPC_DESTINATION_VARIABLE) default private_ip_address see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini
+
 Example of pipeline configuration :
 
 **YAML anchors**
