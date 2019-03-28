@@ -10,7 +10,7 @@ Docker image which contain tools and a scripts for cycloid.io deployment pipelin
 
 This script use env vars configuration to run ansible playbook with ssh proxy on a bastion.
 
-./ansible-runner
+./scripts/ansible-runner
   * `AWS_ACCESS_KEY_ID` : Used by Amazon EC2 dynamic inventory
   * `AWS_SECRET_ACCESS_KEY`: Used by Amazon EC2 dynamic inventory
   * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers
@@ -26,7 +26,7 @@ This script use env vars configuration to run ansible playbook with ssh proxy on
   * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml` Name of the ansible playbook to run
   * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook` Path of the ansible playbook to run
 ec2.py vars :
-  * (EC2_VPC_DESTINATION_VARIABLE) default private_ip_address see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini
+  * `(EC2_VPC_DESTINATION_VARIABLE)` default `private_ip_address`. Can be `ip_address` for public ip address, see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini
 
 Example of pipeline configuration :
 

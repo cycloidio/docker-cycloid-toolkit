@@ -20,7 +20,7 @@ usage()
     echo '  * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml` Name of the ansible playbook to run'
     echo '  * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook` Path of the ansible playbook to run'
     echo 'ec2.py vars :'
-    echo '  * (EC2_VPC_DESTINATION_VARIABLE) default private_ip_address see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini'
+    echo '  * `(EC2_VPC_DESTINATION_VARIABLE)` default `private_ip_address`. Can be `ip_address` for public ip address, see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini'
     echo ''
     exit 1
 }
