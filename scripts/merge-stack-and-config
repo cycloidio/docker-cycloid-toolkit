@@ -2,20 +2,20 @@
 
 usage()
 {
-    echo "You should provide the following env vars :"
-    echo ""
+    echo 'You should provide the following env vars :'
+    echo ''
     echo "$0"
-    echo "  * STACK_PATH : Path of the stack usually stack-name/ansible or stack-name/terraform"
-    echo "  * CONFIG_PATH : Path of the config to merge with, usually ((project))/ansible or ((project))/terraform/((env)"
-    echo ""
-    echo "  * (TERRAFORM_METADATA_FILE). Default lookup terraform/metadata. If find, will add vars into group_vars/all (input directory should be provided for ansible stack only)"
-    echo "  * (STACK_ROOT_PATH). Expect to have git input named stack."
-    echo "  * (CONFIG_ROOT_PATH). Default look for a git input named config."
-    echo "  * (MERGE_OUTPUT_PATH). Default merged-stack."
-    echo "  * (EXTRA_ANSIBLE_VARS). Extra variable for ansible to put in group_vars/all."
-    echo "  * (EXTRA_PATH). Additionnals paths to use during the merge using rsync format eg foo/"
-    echo "  * (DEBUG). Display the result at the end of the merge"
-    echo ""
+    echo '  * `STACK_PATH` : Path of the stack usually stack-name/ansible or stack-name/terraform'
+    echo '  * `CONFIG_PATH` : Path of the config to merge with, usually ((project))/ansible or ((project))/terraform/((env)'
+    echo ''
+    echo '  * `(TERRAFORM_METADATA_FILE)` Default lookup `terraform/metadata`. If find, will add vars into group_vars/all (input directory should be provided for ansible stack only)'
+    echo '  * `(STACK_ROOT_PATH)` Default `stack`. Task input/directory name containing the source code of a stack.'
+    echo '  * `(CONFIG_ROOT_PATH)`. Default `config`. Task input/directory name containing the config of a stack.'
+    echo '  * `(MERGE_OUTPUT_PATH)`. Default `merged-stack`. Name of the task output/directory to put the result of the merge'
+    echo '  * `(EXTRA_ANSIBLE_VARS)`. Extra variable for ansible to put in `group_vars/all`.'
+    echo '  * `(EXTRA_PATH)`. Additionnals paths to use during the merge using rsync format eg foo/'
+    echo '  * `(DEBUG)`. Display the result at the end of the merge'
+    echo ''
     exit 1
 }
 
@@ -35,6 +35,10 @@ usage
 fi
 
 set -e
+
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
 
 echo "############ Merging : ${STACK_ROOT_PATH}/${STACK_PATH}/ <- ${CONFIG_ROOT_PATH}/${CONFIG_PATH}/"
 

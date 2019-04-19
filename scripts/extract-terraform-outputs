@@ -2,12 +2,12 @@
 
 usage()
 {
-    echo "You should provide the following env vars :"
-    echo ""
+    echo 'You should provide the following env vars :'
+    echo ''
     echo "$0"
-    echo "  * (TERRAFORM_METADATA_FILE) default : terraform/metadata"
-    echo "  * (OUTPUT_ANSIBLE_VAR_FILE) default : output-var/all. You might expect to force ansible-playbook/group_vars/all"
-    echo ""
+    echo '  * `(TERRAFORM_METADATA_FILE)` Default `terraform/metadata`.'
+    echo '  * `(OUTPUT_ANSIBLE_VAR_FILE)` Default `output-var/all`. You might expect provide `ansible-playbook/group_vars/all`.'
+    echo ''
     exit 1
 }
 

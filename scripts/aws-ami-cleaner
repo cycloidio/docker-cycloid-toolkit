@@ -2,15 +2,15 @@
 
 usage()
 {
-    echo "You should provide the following env vars :"
-    echo ""
+    echo 'You should provide the following env vars :'
+    echo ''
     echo "$0"
-    echo "  * AWS_ACCESS_KEY_ID"
-    echo "  * AWS_SECRET_ACCESS_KEY"
-    echo "  * AWS_NAME_PATTERNS: Array of pattern of AMI name."
-    echo "  * (AWS_DEFAULT_REGION)"
-    echo "  * (KEEP): how many old version of the ami to keep. default 3"
-    echo ""
+    echo '  * `AWS_ACCESS_KEY_ID`'
+    echo '  * `AWS_SECRET_ACCESS_KEY`'
+    echo '  * `AWS_NAME_PATTERNS`: Array of pattern of AMI name.'
+    echo '  * `(AWS_DEFAULT_REGION)` Default `eu-west-1`'
+    echo '  * `(KEEP)`: Default `3`. How many old version of the ami to keep.'
+    echo ''
     exit 1
 
 }

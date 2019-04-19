@@ -2,14 +2,14 @@
 
 usage()
 {
-    echo "You should provide the following env vars :"
-    echo ""
+    echo 'You should provide the following env vars :'
+    echo ''
     echo "$0"
-    echo "  * VAULT_ROLEID"
-    echo "  * VAULT_SECRETID"
-    echo "  * (VAULT_LOGIN_URL) default: https://vault.cycloid.io/v1/auth/approle/login"
-    echo "  * (VARS_TF_PATH) default: vault-token/terraform.tfvars"
-    echo ""
+    echo '  * `VAULT_ROLEID`'
+    echo '  * `VAULT_SECRETID`'
+    echo '  * `(VAULT_LOGIN_URL)` Default `https://vault.cycloid.io/v1/auth/approle/login`.'
+    echo '  * `(VARS_TF_PATH)` Default `vault-token/terraform.tfvars`.'
+    echo ''
     exit 1
 }
 

@@ -17,14 +17,19 @@ usage()
     echo '  * `(ANSIBLE_GALAXY_EXTRA_ARGS)` Additional ansible-galaxy arguments'
     echo '  * `(ANSIBLE_VAULT_PASSWORD)` : Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files'
     echo '  * `(ANSIBLE_FORCE_GALAXY)` default `false`. Force to run Ansible galaxy to updated eventual cached ansible roles'
-    echo '  * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml` Name of the ansible playbook to run'
-    echo '  * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook` Path of the ansible playbook to run'
+    echo '  * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml`. Name of the ansible playbook to run'
+    echo '  * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook`. Path of the ansible playbook to run'
+    echo '  * `(DEBUG)` Run in debug mode'
     echo 'ec2.py vars :'
     echo '  * `(EC2_VPC_DESTINATION_VARIABLE)` default `private_ip_address`. Can be `ip_address` for public ip address, see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini'
     echo ''
     exit 1
 }
 if [ -n "$1" ]; then usage; fi
+
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
 
 # Set defaults
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
