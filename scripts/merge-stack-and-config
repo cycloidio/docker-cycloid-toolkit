@@ -5,8 +5,8 @@ usage()
     echo 'You should provide the following env vars :'
     echo ''
     echo "$0"
-    echo '  * `STACK_PATH` : Path of the stack usually stack-name/ansible or stack-name/terraform'
-    echo '  * `CONFIG_PATH` : Path of the config to merge with, usually ((project))/ansible or ((project))/terraform/((env)'
+    echo '  * `(STACK_PATH)` : Path of the stack usually stack-name/ansible or stack-name/terraform'
+    echo '  * `(CONFIG_PATH)` : Path of the config to merge with, usually ((project))/ansible or ((project))/terraform/((env)'
     echo ''
     echo '  * `(TERRAFORM_METADATA_FILE)` Default lookup `terraform/metadata`. If find, will add vars into group_vars/all (input directory should be provided for ansible stack only)'
     echo '  * `(STACK_ROOT_PATH)` Default `stack`. Task input/directory name containing the source code of a stack.'
@@ -14,6 +14,7 @@ usage()
     echo '  * `(MERGE_OUTPUT_PATH)`. Default `merged-stack`. Name of the task output/directory to put the result of the merge'
     echo '  * `(EXTRA_ANSIBLE_VARS)`. Extra variable for ansible to put in `group_vars/all`.'
     echo '  * `(EXTRA_PATH)`. Additionnals paths to use during the merge using rsync format eg foo/'
+    echo '  * `(RSYNC_ARGS)`. Default `--exclude=.git` Additionnals arguments used on rsync command during the merge of the stack and config.'
     echo '  * `(DEBUG)`. Display the result at the end of the merge'
     echo ''
     exit 1
@@ -27,12 +28,11 @@ export MERGE_OUTPUT_PATH="${MERGE_OUTPUT_PATH:-merged-stack}"
 export STACK_ROOT_PATH="${STACK_ROOT_PATH:-stack}"
 export CONFIG_ROOT_PATH="${CONFIG_ROOT_PATH:-config}"
 export TERRAFORM_METADATA_FILE="${TERRAFORM_METADATA_FILE:-terraform/metadata}"
+export RSYNC_ARGS="${RSYNC_ARGS:---exclude=.git}"
 
-# Check args
-if [ -z "$STACK_PATH" ] ||
-[ -z "$CONFIG_PATH" ]; then
-usage
-fi
+# Add '' ad the end of the path to ensure it always contain a trailing / for rsync
+export FULL_STACK_PATH=$(python -c "from os.path import join; print join('$STACK_ROOT_PATH','$STACK_PATH', '')")
+export FULL_CONFIG_PATH=$(python -c "from os.path import join; print join('$CONFIG_ROOT_PATH','$CONFIG_PATH', '')")
 
 set -e
 
@@ -40,19 +40,20 @@ if [ -n "$DEBUG" ]; then
   set -x
 fi
 
-echo "############ Merging : ${STACK_ROOT_PATH}/${STACK_PATH}/ <- ${CONFIG_ROOT_PATH}/${CONFIG_PATH}/"
 
-if ! [ -d "${STACK_ROOT_PATH}/${STACK_PATH}" ]; then
-  echo "/!\ ERROR : the stack directory ${STACK_ROOT_PATH}/${STACK_PATH}/ does not exist"
+echo "############ Merging : ${FULL_STACK_PATH} <- ${FULL_CONFIG_PATH}"
+
+if ! [ -d "${FULL_STACK_PATH}" ]; then
+  echo "/!\ ERROR : the stack directory ${FULL_STACK_PATH} does not exist"
   exit 1
 fi
 
 mkdir -p $MERGE_OUTPUT_PATH/
-rsync -av ${STACK_ROOT_PATH}/${STACK_PATH}/ $MERGE_OUTPUT_PATH/
-if [ -d "${CONFIG_ROOT_PATH}/${CONFIG_PATH}" ]; then
-  rsync -av ${CONFIG_ROOT_PATH}/${CONFIG_PATH}/ $MERGE_OUTPUT_PATH/
+rsync -av $RSYNC_ARGS ${FULL_STACK_PATH} $MERGE_OUTPUT_PATH/
+if [ -d "${FULL_CONFIG_PATH}" ]; then
+  rsync -av $RSYNC_ARGS ${FULL_CONFIG_PATH} $MERGE_OUTPUT_PATH/
 else
-  echo "! Warning, the config directory $CONFIG_ROOT_PATH/${CONFIG_PATH} does not exist"
+  echo "! Warning, CONFIG_PATH if not configured or does not exist : ${FULL_CONFIG_PATH}"
 fi
 
 
@@ -61,10 +62,10 @@ fi
 #  - foo/
 # Those path are expected to be send be the pipeline as a json array
 if [ -n "$EXTRA_PATH" ]; then
-  for ADDITIONAL_PATH in $(python -c "import json, os; print '\n'.join([ x for x in json.loads(os.getenv('EXTRA_PATH', '{}'))])"); do
-    echo "############ Merging : extra path ${STACK_ROOT_PATH}/${STACK_PATH}/ <- $ADDITIONAL_PATH"
+  for ADDITIONAL_PATH in $(python -c "import json, os; print '\n'.join([ x for x in json.loads(os.getenv('EXTRA_PATH', '[]'))])"); do
+    echo "############ Merging : extra path ${FULL_STACK_PATH} <- $ADDITIONAL_PATH"
     if [ -d "$ADDITIONAL_PATH" ]; then
-      rsync -av $ADDITIONAL_PATH $MERGE_OUTPUT_PATH/
+      rsync -av $RSYNC_ARGS $ADDITIONAL_PATH $MERGE_OUTPUT_PATH
     else
       echo "! Warning, the extra directory $ADDITIONAL_PATH does not exist"
     fi
@@ -86,8 +87,12 @@ if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
   python -c "import json, os, yaml; print '\n'.join([ '%s: \"%s\"' % (k,v) for k, v in json.loads(os.environ['EXTRA_ANSIBLE_VARS'].replace('\\n','\\\\\\\n')).items()])" >> ${MERGE_OUTPUT_PATH}/group_vars/all
 fi
 
-echo "############ extract tag for the image : <stack_id>-<config_id>"
-echo "$(git --git-dir=$STACK_ROOT_PATH/.git rev-parse --verify HEAD --short)-$(git --git-dir=$CONFIG_ROOT_PATH/.git rev-parse --verify HEAD --short)" | tee $MERGE_OUTPUT_PATH/tag
+# If stack and config are git repositories, extract git commits as tag
+
+if [ -d "$STACK_ROOT_PATH/.git" ] && [ -d "$CONFIG_ROOT_PATH/.git" ]; then
+  echo "############ extract tag for the image : <stack_id>-<config_id>"
+  echo "$(git --git-dir=$STACK_ROOT_PATH/.git rev-parse --verify HEAD --short)-$(git --git-dir=$CONFIG_ROOT_PATH/.git rev-parse --verify HEAD --short)" | tee $MERGE_OUTPUT_PATH/tag
+fi
 
 if [ -n "$DEBUG" ]; then
   echo "############ DEBUG, content of $MERGE_OUTPUT_PATH"

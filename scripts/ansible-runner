@@ -41,7 +41,7 @@ export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
 # Used to set a a default ssh multiplex. You can override it to disable it
 export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto -o ControlPersist=60s"}"
 export ANSIBLE_SSH_ARGS="${ANSIBLE_SSH_ARGS} ${EXTRA_ANSIBLE_SSH_ARGS}"
-export ANSIBLE_FORCE_COLOR=true
+export ANSIBLE_FORCE_COLOR="${ANSIBLE_FORCE_COLOR:-true}"
 export ANSIBLE_STDOUT_CALLBACK="${ANSIBLE_STDOUT_CALLBACK:-actionable}"
 # Default env var for ec2.py
 export EC2_VPC_DESTINATION_VARIABLE="${EC2_VPC_DESTINATION_VARIABLE:-private_ip_address}"
@@ -60,7 +60,8 @@ fi
 
 # Construct vars
 if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
-  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} $(echo $EXTRA_ANSIBLE_VARS | jq -r 'to_entries[] | "-e \(.key)=\(.value | .)"' | tr '\n' ' ')"
+  echo $EXTRA_ANSIBLE_VARS | jq -M . > /tmp/extra_ansible_args.json
+  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -e @/tmp/extra_ansible_args.json"
 fi
 if [ -n "$TAGS" ]; then
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} --tags $(echo $TAGS | jq -r '. | join(",")')"
@@ -97,6 +98,7 @@ fi
 
 echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
 
+ansible --version
 ansible-playbook -u $ANSIBLE_REMOTE_USER --vault-password-file=.vault-password $ANSIBLE_PLAYBOOK_NAME --diff ${EXTRA_ANSIBLE_ARGS}
 
 exit $?

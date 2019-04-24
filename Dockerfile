@@ -29,6 +29,7 @@ RUN ln -s /lib /lib64 \
             rsync \
             patch \
             gettext \
+            findutils \
     && \
         apk --upgrade add --no-cache --virtual \
             build-dependencies \
