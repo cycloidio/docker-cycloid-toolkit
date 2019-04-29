@@ -26,8 +26,6 @@ import docker
 # print(r.output.decode('utf-8'))
 
 
-#        self.clean_dir()
-#        os.makedirs(self.testdir)
 class TestCase(unittest.TestCase):
 
     def drun(self, *args, **kwargs):
@@ -39,12 +37,6 @@ class TestCase(unittest.TestCase):
         r = self.drun(cmd="find %s -type f -printf '%%P\n'" % path)
         return sorted([line for line in r.output.decode('utf-8').split('\r\n') if line != ''])
 
-    #def run_cmd(self, cmd):
-    #    stdout = subprocess.Popen('%s 2>/dev/null' % cmd,
-    #                              shell=True,
-    #                              stdout=subprocess.PIPE)
-    #    return [line for line in stdout.communicate()[0].split('\r\n') if line != '']
-
     def output_contains(self, output, pattern):
         p = re.compile(pattern)
 
@@ -53,14 +45,25 @@ class TestCase(unittest.TestCase):
                 return True
         return False
 
+    def setup_dir(self):
+        if os.path.exists(self.testsdir):
+            shutil.rmtree(self.testsdir)
+        shutil.copytree('tests', self.testsdir)
+
     def clean_dir(self):
-        if os.path.isdir(self.testdir):
-            shutil.rmtree(self.testdir)
+        if os.path.isdir(self.testsdir):
+            shutil.rmtree(self.testsdir)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.docker = docker.from_env()
-        #self.use_docker = strtobool(os.getenv('USE_DOCKER', 'true'))
+        self.docker_image = os.environ.get('IMAGE_NAME', 'cycloid/cycloid-toolkit')
+        self.testsdir = "/tmp/%s" % self.__class__.__name__
+        self.clean_dir()
+
+    def setUp(self):
+        super().setUp()
+        self.setup_dir()
 
     def tearDown(self):
         super().tearDown()
@@ -69,6 +72,7 @@ class TestCase(unittest.TestCase):
             self.container.wait(condition='removed')
         except docker.errors.NotFound:
             pass
+        self.clean_dir()
 
 
 class MergeStackAndConfigTestCase(TestCase):
@@ -80,14 +84,14 @@ class MergeStackAndConfigTestCase(TestCase):
             'CONFIG_ROOT_PATH': 'config',
             'MERGE_OUTPUT_PATH': '/tmp/merged-stack',
         }
-        self.container = self.docker.containers.run(image='cycloid/cycloid-toolkit',
+        self.container = self.docker.containers.run(image=self.docker_image,
                                    command='sleep 3600',
                                    name=self.__class__.__name__,
                                    auto_remove=True,
                                    remove=True,
                                    detach=True,
                                    working_dir='/opt',
-                                   volumes={osjoin(os.getcwd(), 'tests/merge-stack-and-config'): {'bind': '/opt', 'mode': 'rw'}},
+                                   volumes={osjoin(os.getcwd(), '%s/merge-stack-and-config' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
                                    environment=environment,
                                   )
 
@@ -231,21 +235,33 @@ class AnsibleRunnerTestCase(TestCase):
             'AWS_ACCESS_KEY_ID': 'foo',
             'AWS_SECRET_ACCESS_KEY': 'bar',
             'SSH_PRIVATE_KEY': '''-----BEGIN RSA PRIVATE KEY-----
-MIIEoQIBAAKCAQEA3gH0VocXkTRHxgMAcNRgZfe1y1OC+MtJ3vmkX3K28A7FgCE7
+MIICWgIBAAKBgQC6W6OIBOiewkaKBz73bQkv0dqfiUEOrNI0+zWEc3SaaLhz8k1k
+Nug+K+0nEh4GbP82wx+1bLd+KeJUg4EX4kmgHY8Yg8aLkcbSC6kMMqfrRsN2HG4W
+DqRrBvWiTTbEZQB+K6fOhmOFLcI+jkYAgBiPx4YjLIZsV+6+WyG9/ODPiwIDAQAB
+An9GnHJaF4IMpZAUvKofFjFk7R7pVBhSdyku6gBdL2H/H67EQAsS7bsR05MIOtUl
+micZmNVq6MaeB0C6xRkk85jxbJvx4kuBkXVuckFLx2Bij7a+tJavlprkfEOw2hja
+EP27ChGnX3HuCGuQ6NqBXooNBYT0c34z4Io3sREHAzuxAkEA4xslTeLV+JXYzbqW
+C+sZmN7PJg1XBuNJIiYFSx7uFBEW4jLD7n8lbm0SmHd1EGVlaMNahHPqAHB/OQod
+a/cFAwJBANIRU479ElSqYGuf92Gp6ZiE1Vxs6MpJGbzPJfAtu343MmxLn9w/8kel
+Z8p4/vjRugtxCBMYs4JmPoWhmxQvMNkCQEnU92m8xwdL3/HyKPmy8t1qAjpCt/o7
+RfleFvZ3FbtcWu4qxtvwZgDiYNtEasBr1m4apIDPFlISQKoQicQhyHUCQGiUjafr
+H9wcskICcpMhlxUCVIJeCgrjF7gi3L1U1zn/2s+FWsG46DJ5C1IGqNFRADFABYgU
+TRIHOusmSGFlGQkCQQC4mLnzDbfgBGAkB6HsGTvdsxElQ+s+h9RlHlg/PxdiKBVI
+j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 -----END RSA PRIVATE KEY-----''',
             'ANSIBLE_PLAYBOOK_PATH': 'playbook',
             'ANSIBLE_FORCE_COLOR': 'false',
             'ANSIBLE_VAULT_PASSWORD': 'password',
             'ANSIBLE_NOCOLOR': 'true',
         }
-        self.container = self.docker.containers.run(image='cycloid/cycloid-toolkit',
+        self.container = self.docker.containers.run(image=self.docker_image,
                                    command='sleep 3600',
                                    name=self.__class__.__name__,
                                    auto_remove=True,
                                    remove=True,
                                    detach=True,
                                    working_dir='/opt',
-                                   volumes={osjoin(os.getcwd(), 'tests/ansible-runner'): {'bind': '/opt', 'mode': 'rw'}},
+                                   volumes={osjoin(os.getcwd(), '%s/ansible-runner' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
                                    environment=environment,
                                   )
 
@@ -284,22 +300,29 @@ MIIEoQIBAAKCAQEA3gH0VocXkTRHxgMAcNRgZfe1y1OC+MtJ3vmkX3K28A7FgCE7
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook -u admin'))
         self.assertEquals(r.exit_code, 0)
 
+        # Test PRIVATE_SSH_KEY
         r = self.drun(cmd="cat /root/.ssh/id_rsa")
         self.assertTrue(self.output_contains(r.output, '^-----BEGIN RSA PRIVATE KEY-----'))
+        self.assertTrue(self.output_contains(r.output, '^MIICWgIBAAKBgQC6W6OIBOiewka'))
         self.assertTrue(self.output_contains(r.output, '^-----END RSA PRIVATE KEY-----'))
+
+        # Test SSH_PRIVATE_KEYS
+        environment={
+            'SSH_PRIVATE_KEY': '',
+            'SSH_PRIVATE_KEYS': '''["-----BEGIN RSA PRIVATE KEY-----\nMIICWwIBAAKBgQCsZ1ao/9WyCzU7x843xbfI1aH/JdHWxNbEYrcceddNUBpEFu5m\nE8OakHADydCAd2KoYnWuPNb7Je433/b3YYimgOgKIZ46Y//RHqcyscu+v/zXDFUM\nXtMd00Qt/rtFgGGN1iLNS/XTqwKMU8ZJuAiKTg5YAp3Nc9h8ksEWRmnO1QIDAQAB\nAoGAAb8qSZwN9jfW2jw0AqymKArCEWu4rIxiAKtfX5J8c/QT0AzLbY1VtgMwn1k0\nG5kaDsqwlotXQkQoHbjPL8J1N/ZgNTjOvANLqFiAv0rU/2iko2gzHke7PLJYIWon\nFdHTes2qPVwkdRjdCTZDTIKZTF3rFdWfBNXUn2xdJCYoOAECQQDlweRhR7t0YWCk\nneR8yYGjEAbqJrF5uuGAOdMshgzsWeQV2yqXCDJItRoCFfnRQJ0CH+k9tC0wZbH/\nsga/kkZBAkEAwBhsTLEq4FMC67xGqI9BG11fO2ygvGnOOIEx2C8QIWiTuCq11ifB\nQqMCAtdW4XUMcSeWl9xXdDxU/UA2WforlQJAQcWMpFCNmBZcPSO6CgMBanWnFRa4\njZly/msPSdqiDnL5OUyBV7UP+AJoDJrP5hgyGi6abYCLwyQJnaIQDn1IQQJALYCb\nhr8gzOpc8sIyapMkdPr1J/pfSMI3WyMfT3o2c/N1qlZTpFreaI58V3fy2I0FWXhr\nL6W+AYaZCzQ+q6ma0QJATjW1WRs3EdeVei96fqyU6cbq2vMoyU4UlZMmxU8oWhVG\ngoaHVf9crFoEuUYL9QNG28OJYbyQo5u+MaVrcT/l0A==\n-----END RSA PRIVATE KEY-----", "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQDAn7Kv6B/IPi+cV0WAMm6RYarDG6p4c5EMaHgpIvt0TU4KzHcR\npgXjjIKBJdYlVYtkb7xuCsJKHOqq5jFMSEhw2mCJtvnGADJdx8wNQZiUcOzVixYp\nJw+47clp15ApxxYmkKSgEynZsbIKuWDZaMX6eZ4PFR4G8kFB1x6YnSDPkQIDAQAB\nAoGAOUOAoJDWWfY6uzSqobjca/XoCQbBf/uDRHgOONSAgou0xrsQLrv3hjUwWup/\npiuvO9WH5ALozZWZIeM7Bp16gyUVUA4B4TRCA0cgs64zhJBUhlRzAa8EWUkTimjN\n7VjpnM2lfsRpDzBRHiFNvK71JGEtoxKla+9wO+7cCuFeu/0CQQD8tmCKIg0c+3K3\ntupKwPtSZ2JlLQ0mWol/EEPknJZDGc8dOQpic7yscw8S0PsX+dRP/2W+DaLiWQYS\n0Rc/dBxbAkEAwyE0UDqHmVBxCG+AI4prOXF7YxI/d2XbcC8cFvna4RFNl7v+d5h2\nYN1m6tMDIw+C/XUIIDnJSrsvkmzH+Rh3gwJBAIW6HKv8CORlSvdcm+6i4Ftiyfaw\nOF0rW8cZXFQFaJ5pcegM3ynqBNVcrYVPgQ/W7DrI85X2sVMFuOkMLDkvwDECQH9E\nENKi2f3ssUxHLNQBW53Dni4noK1HCbBJiZCStWdF2c21F2r5TXwv6wgNSGZ9n3mf\n8wTRq6/KFmTx/htBEfECQHfDWbA5hfnpsN3HbAO+Hcv6oBEY7CEOTB2Jcw6jnKR3\n/AT0NXdfaGORivBUiFk6jq1za8KfiXz6ipLzrSnnPZ0=\n-----END RSA PRIVATE KEY-----"]''',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        r = self.drun(cmd="cat /root/.ssh/id_rsa")
+        self.assertTrue(self.output_contains(r.output, '^MIICWwIBAAKBgQCsZ1ao'))
+
+        r = self.drun(cmd="cat /root/.ssh/id_rsa1")
+        self.assertTrue(self.output_contains(r.output, '^MIICXAIBAAKBgQDAn7Kv6B'))
 
         r = self.drun(cmd="cat playbook/.vault-password")
         self.assertTrue(self.output_contains(r.output, '.*password'))
     
 
     def test_extra_args(self):
-        environment={
-            'BASTION_URL': 'root@localhost',
-        }
-        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ANSIBLE_SSH_ARGS.*root@localhost'))
-        self.assertEquals(r.exit_code, 0)
-
         environment={
             'TAGS': '["foo", "bar"]',
         }
@@ -328,6 +351,21 @@ MIIEoQIBAAKCAQEA3gH0VocXkTRHxgMAcNRgZfe1y1OC+MtJ3vmkX3K28A7FgCE7
         r = self.drun(cmd="cat /tmp/extra_ansible_args.json")
         self.assertTrue(self.output_contains(r.output, '.*bar.+42'))
 
+    def test_ssh_jumps_args(self):
+        environment={
+            'BASTION_URL': 'root@localhost',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ANSIBLE_SSH_ARGS.*root@localhost'))
+        self.assertEquals(r.exit_code, 0)
+
+        environment={
+            'BASTION_URL': 'root@localhost',
+            'SSH_JUMP_URL': 'admin@bastion1,admin@bastion2',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ProxyJump=admin@bastion1,admin@bastion2'))
+        self.assertEquals(r.exit_code, 0)
 
 
 
@@ -345,63 +383,7 @@ MIIEoQIBAAKCAQEA3gH0VocXkTRHxgMAcNRgZfe1y1OC+MtJ3vmkX3K28A7FgCE7
         r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
         self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable .+ip_address'))
 
-
-
-
-
-
-
-
-
-
-
-
-
     
-
-#    def test_ls(self):
-#        # Test ls without files
-#        rv = self.app.get('/ls', headers={'User-Agent': 'curl'})
-#        self.assertEquals('200 OK', rv.status)
-#        self.assertEquals(json.loads(rv.get_data()), {})
-#
-#        # With one posted file
-#        _file = osjoin(self.testdir, 'test_file')
-#        last_file_md5 = write_random_file(_file)  # keep md5 for next test
-#        rv = self.app.post('/', data={'file': (open(_file, 'r'),
-#                           'test_pastefile_random.file'), })
-#        rv = self.app.get('/ls', headers={'User-Agent': 'curl'})
-#        self.assertEquals('200 OK', rv.status)
-#        # basic check if we have an array like {md5: {name: ...}}
-#        filenames = [infos['name'] for md5, infos in json.loads(
-#            rv.get_data()).iteritems()]
-#        self.assertEquals(['test_pastefile_random.file'], filenames)
-#
-#        # Add one new file.
-#        # Remove the first file from disk only in the last test
-#        os.remove(osjoin(flaskr.app.config['UPLOAD_FOLDER'], last_file_md5))
-#        _file = osjoin(self.testdir, 'test_file_2')
-#        write_random_file(_file)
-#        rv = self.app.post('/', data={'file': (open(_file, 'r'),
-#                           'test_pastefile2_random.file'), })
-#        rv = self.app.get('/ls', headers={'User-Agent': 'curl'})
-#        filenames = [infos['name'] for md5, infos in json.loads(
-#            rv.get_data()).iteritems()]
-#        self.assertEquals(['test_pastefile2_random.file'], filenames)
-#
-#        # if we lock the database, get should work
-#        with mock.patch('pastefile.controller.JsonDB._lock',
-#                        mock.Mock(return_value=False)):
-#            rv = self.app.get('/ls', headers={'User-Agent': 'curl'})
-#        self.assertEquals(['test_pastefile2_random.file'], filenames)
-#
-#        # Try with ls disables
-#        flaskr.app.config['DISABLED_FEATURE'] = ['ls']
-#        rv = self.app.get('/ls', headers={'User-Agent': 'curl'})
-#        self.assertEquals(rv.get_data(),
-#                          'Administrator disabled the /ls option.\n')
-
 
 if __name__ == '__main__':
     unittest.main()
-

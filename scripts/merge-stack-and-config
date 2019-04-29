@@ -30,9 +30,9 @@ export CONFIG_ROOT_PATH="${CONFIG_ROOT_PATH:-config}"
 export TERRAFORM_METADATA_FILE="${TERRAFORM_METADATA_FILE:-terraform/metadata}"
 export RSYNC_ARGS="${RSYNC_ARGS:---exclude=.git}"
 
-# Add '' ad the end of the path to ensure it always contain a trailing / for rsync
-export FULL_STACK_PATH=$(python -c "from os.path import join; print join('$STACK_ROOT_PATH','$STACK_PATH', '')")
-export FULL_CONFIG_PATH=$(python -c "from os.path import join; print join('$CONFIG_ROOT_PATH','$CONFIG_PATH', '')")
+# Add '' at the end of the path to ensure it always contain a trailing / for rsync
+export FULL_STACK_PATH=$(python -c "from os.path import join; print(join('$STACK_ROOT_PATH','$STACK_PATH', ''))")
+export FULL_CONFIG_PATH=$(python -c "from os.path import join; print(join('$CONFIG_ROOT_PATH','$CONFIG_PATH', ''))")
 
 set -e
 
@@ -62,7 +62,7 @@ fi
 #  - foo/
 # Those path are expected to be send be the pipeline as a json array
 if [ -n "$EXTRA_PATH" ]; then
-  for ADDITIONAL_PATH in $(python -c "import json, os; print '\n'.join([ x for x in json.loads(os.getenv('EXTRA_PATH', '[]'))])"); do
+  for ADDITIONAL_PATH in $(python -c "import json, os; print('\n'.join([ x for x in json.loads(os.getenv('EXTRA_PATH', '[]'))]))"); do
     echo "############ Merging : extra path ${FULL_STACK_PATH} <- $ADDITIONAL_PATH"
     if [ -d "$ADDITIONAL_PATH" ]; then
       rsync -av $RSYNC_ARGS $ADDITIONAL_PATH $MERGE_OUTPUT_PATH
@@ -84,7 +84,7 @@ if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
   echo "############ Adding extra ansible vars to -> group_vars/all"
   mkdir -p ${MERGE_OUTPUT_PATH}/group_vars
   touch ${MERGE_OUTPUT_PATH}/group_vars/all
-  python -c "import json, os, yaml; print '\n'.join([ '%s: \"%s\"' % (k,v) for k, v in json.loads(os.environ['EXTRA_ANSIBLE_VARS'].replace('\\n','\\\\\\\n')).items()])" >> ${MERGE_OUTPUT_PATH}/group_vars/all
+  python -c "import json, os, yaml; print('\n'.join([ '%s: \"%s\"' % (k,v) for k, v in json.loads(os.environ['EXTRA_ANSIBLE_VARS'].replace('\\n','\\\\\\\n')).items()]))" >> ${MERGE_OUTPUT_PATH}/group_vars/all
 fi
 
 # If stack and config are git repositories, extract git commits as tag

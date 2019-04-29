@@ -8,7 +8,9 @@ usage()
     echo '  * `AWS_ACCESS_KEY_ID` : Used by Amazon EC2 dynamic inventory'
     echo '  * `AWS_SECRET_ACCESS_KEY`: Used by Amazon EC2 dynamic inventory'
     echo '  * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers'
-    echo '  * `(BASTION_URL)` : SSH url of the bastion server. Exemple : `admin@myserver.com`'
+    echo '  * `SSH_PRIVATE_KEYS` : SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]'
+    echo '  * `(BASTION_URL)` : SSH url of the bastion server. Example : `admin@myserver.com`'
+    echo '  * `(SSH_JUMP_URL)` : SSH ProxyJump url used with `ssh -J ...`. Example : `user1@Bastion1,user2@Bastion2`'
     echo '  * `(TAGS)`: Only run plays and tasks tagged with these values'
     echo '  * `(SKIP_TAGS)` : only run plays and tasks whose tags do not match these values'
     echo '  * `(EXTRA_ANSIBLE_ARGS)` Additional ansible-playbook arguments'
@@ -26,6 +28,8 @@ usage()
     exit 1
 }
 if [ -n "$1" ]; then usage; fi
+
+set -e
 
 if [ -n "$DEBUG" ]; then
   set -x
@@ -54,7 +58,7 @@ export EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS:-$EXTRA_ARGS}"
 # Check args
 if [ -z "$AWS_ACCESS_KEY_ID" ] ||
 [ -z "$AWS_SECRET_ACCESS_KEY" ] ||
-[ -z "$SSH_PRIVATE_KEY" ]; then
+[ -z "$SSH_PRIVATE_KEY" ] && [ -z "$SSH_PRIVATE_KEYS" ]; then
 usage
 fi
 
@@ -75,17 +79,45 @@ if [ "$ANSIBLE_FORCE_GALAXY" == "true" ]; then
 fi
 
 # Setup ssh access
+eval $(ssh-agent -s)
+
+# SSH keys
+KEY_ID=1
+if [ -n "$SSH_PRIVATE_KEYS" ]; then
+	IFS=$'\n'
+	for key in $(python -c "import json, os; print('\n'.join([ '%s' % v for v in json.loads(os.environ['SSH_PRIVATE_KEYS'].replace('\\n','\\\\\\\n'))]))"); do
+		# Use the first key as default SSH_PRIVATE_KEY if not defined
+		if [ -z "$SSH_PRIVATE_KEY" ]; then
+			SSH_PRIVATE_KEY=$(echo -e $key)
+			continue
+		fi
+		echo -e "$key" > /root/.ssh/id_rsa${KEY_ID}
+		chmod 600 /root/.ssh/id_rsa${KEY_ID}
+		ssh-add /root/.ssh/id_rsa${KEY_ID}
+		KEY_ID=$((KEY_ID+1))
+	done
+	unset IFS
+fi
+
+# Root ssh key
 echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
 chmod 600  /root/.ssh/id_rsa
+ssh-add /root/.ssh/id_rsa
+
+# Vault password
 echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
 #export DEFAULT_VAULT_PASSWORD_FILE="$ANSIBLE_PLAYBOOK_PATH/.vault-password"
 
 # Render ec2.ini template from env vars
 envsubst < /etc/ansible/hosts/ec2.ini.template > /etc/ansible/hosts/ec2.ini
 
-set -xe
+set -x
 
-if [ -n "$BASTION_URL" ]; then
+if [ -n "$SSH_JUMP_URL" ]; then
+  export ANSIBLE_SSH_ARGS="$ANSIBLE_SSH_ARGS -o 'ProxyJump=$SSH_JUMP_URL' -o 'ForwardAgent=yes'"
+
+# DEPRECATED jump parameter for a bastion server. Use SSH_JUMP_URL instead
+elif [ -n "$BASTION_URL" ]; then
   export ANSIBLE_SSH_ARGS="$ANSIBLE_SSH_ARGS"' -o ProxyCommand="ssh -W %h:%p -q '${BASTION_URL}'"'
   #echo "ansible_ssh_common_args: '-o ProxyCommand=\"ssh -W %h:%p -q ${BASTION_URL}\"'" >> $ANSIBLE_PLAYBOOK_PATH/group_vars/all
 fi

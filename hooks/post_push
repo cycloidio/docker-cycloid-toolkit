@@ -1,15 +1,29 @@
 #!/bin/bash
 
 export DOCKERFILE_PATH="${DOCKERFILE_PATH:-Dockerfile}"
+export DOCKER_REPO="${DOCKER_REPO:-cycloid/cycloid-toolkit}"
+export DOCKER_TAG="${DOCKER_TAG:-develop}"
 
 # Already done by push
 # docker push $IMAGE_NAME
 
 IFS=$'\n'
-for line in $(cat .ansible_versions); do
-    version=${line% *}
-    tag=v${line#* }
+for line in $(cat .versions); do
+    python_version=$(echo $line | awk '{print $1}')
+    ansible_version=$(echo $line | awk '{print $2}')
+    tag=$(echo $line | awk '{print $3}')
+    if [[ "$tag" == "default_tag" ]]; then
+        tag=$DOCKER_TAG
+    fi
+    extra_tags=$(echo $line | awk -F " " '{for(i=4;i<=NF;++i) printf $i"\\n"}')
+
     echo "=> Pushing $tag"
     docker push $DOCKER_REPO:$tag
+
+    for extra_tag in $(echo -e $extra_tags); do
+        echo "=> Pushing extra tags : $extra_tag"
+        docker push $DOCKER_REPO:$extra_tag
+    done
+
 done
 unset IFS
