@@ -10,7 +10,7 @@ usage()
     echo '  * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers'
     echo '  * `SSH_PRIVATE_KEYS` : SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]'
     echo '  * `(BASTION_URL)` : SSH url of the bastion server. Example : `admin@myserver.com`'
-    echo '  * `(SSH_JUMP_URL)` : SSH ProxyJump url used with `ssh -J ...`. Example : `user1@Bastion1,user2@Bastion2`'
+    echo '  * `(SSH_JUMP_URL)` : SSH ProxyJump url used with `ssh ProxyJump`. Example : `user1@Bastion1,user2@Bastion2`'
     echo '  * `(TAGS)`: Only run plays and tasks tagged with these values'
     echo '  * `(SKIP_TAGS)` : only run plays and tasks whose tags do not match these values'
     echo '  * `(EXTRA_ANSIBLE_ARGS)` Additional ansible-playbook arguments'

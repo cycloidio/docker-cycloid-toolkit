@@ -15,6 +15,7 @@ This script use env vars configuration to run ansible playbook with ssh proxy on
   * `AWS_SECRET_ACCESS_KEY`: Used by Amazon EC2 dynamic inventory
   * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers
   * `(BASTION_URL)` : SSH url of the bastion server. Exemple : `admin@myserver.com`
+  * `(SSH_JUMP_URL)` : SSH ProxyJump url used with `ssh ProxyJump`. Example : `user1@Bastion1,user2@Bastion2`
   * `(TAGS)`: Only run plays and tasks tagged with these values
   * `(SKIP_TAGS)` : only run plays and tasks whose tags do not match these values
   * `(EXTRA_ANSIBLE_ARGS)` Additional ansible-playbook arguments
