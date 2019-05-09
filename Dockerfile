@@ -25,6 +25,7 @@ RUN ln -s /lib /lib64 \
             libc6-compat \
             libxml2 \
             py-lxml \
+            pwgen \
             python${PYTHON_VERSION} \
             openssl \
             ca-certificates \
