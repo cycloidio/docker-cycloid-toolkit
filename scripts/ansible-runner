@@ -5,10 +5,10 @@ usage()
     echo 'You should provide the following env vars :'
     echo ''
     echo "$0"
-    echo '  * `AWS_ACCESS_KEY_ID` : Used by Amazon EC2 dynamic inventory'
-    echo '  * `AWS_SECRET_ACCESS_KEY`: Used by Amazon EC2 dynamic inventory'
-    echo '  * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers'
-    echo '  * `SSH_PRIVATE_KEYS` : SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]'
+    echo '  * `(AWS_ACCESS_KEY_ID)` : Used by Amazon EC2 dynamic inventory'
+    echo '  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory'
+    echo '  * `(SSH_PRIVATE_KEY)` : SSH key to use to connect on servers'
+    echo '  * `(SSH_PRIVATE_KEYS)` : SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]'
     echo '  * `(BASTION_URL)` : SSH url of the bastion server. Example : `admin@myserver.com`'
     echo '  * `(SSH_JUMP_URL)` : SSH ProxyJump url used with `ssh ProxyJump`. Example : `user1@Bastion1,user2@Bastion2`'
     echo '  * `(TAGS)`: Only run plays and tasks tagged with these values'
@@ -55,13 +55,6 @@ export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
 export EXTRA_ANSIBLE_VARS="${EXTRA_ANSIBLE_VARS:-$EXTRA_VARS}"
 export EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS:-$EXTRA_ARGS}"
 
-# Check args
-if [ -z "$AWS_ACCESS_KEY_ID" ] ||
-[ -z "$AWS_SECRET_ACCESS_KEY" ] ||
-[ -z "$SSH_PRIVATE_KEY" ] && [ -z "$SSH_PRIVATE_KEYS" ]; then
-usage
-fi
-
 # Construct vars
 if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
   echo $EXTRA_ANSIBLE_VARS | jq -M . > /tmp/extra_ansible_args.json
@@ -99,10 +92,12 @@ if [ -n "$SSH_PRIVATE_KEYS" ]; then
 	unset IFS
 fi
 
-# Root ssh key
-echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
-chmod 600  /root/.ssh/id_rsa
-ssh-add /root/.ssh/id_rsa
+if [ -n "$SSH_PRIVATE_KEY" ]; then
+  # Root ssh key
+  echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa
+  chmod 600  /root/.ssh/id_rsa
+  ssh-add /root/.ssh/id_rsa
+fi
 
 # Vault password
 echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password

@@ -265,15 +265,6 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                                    environment=environment,
                                   )
 
-    def test_required_args(self):
-        environment={
-            'AWS_ACCESS_KEY_ID': '',
-            'AWS_SECRET_ACCESS_KEY': '',
-            'SSH_PRIVATE_KEY': '',
-        }
-        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertEquals(r.exit_code, 1)
-
     def test_ansible_galaxy(self):
         # Run ansible galaxy
         environment={
