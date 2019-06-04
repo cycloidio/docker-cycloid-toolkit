@@ -48,7 +48,7 @@ RUN ln -s /lib /lib64 \
     && \
         pip${PYTHON_VERSION} install pip --upgrade && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
-        pip${PYTHON_VERSION} install --upgrade ansible==${ANSIBLE_VERSION} \
+        pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} \
     && \
         ln -s $(which python${PYTHON_VERSION}) /bin/python \
     && \

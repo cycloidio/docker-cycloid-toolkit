@@ -1,5 +1,3 @@
-# Used to define the docker latest version
-#ansible==2.7.*
 awscli
 boto
 boto3
