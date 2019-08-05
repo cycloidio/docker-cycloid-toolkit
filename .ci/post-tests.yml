@@ -18,7 +18,7 @@ run:
 
       export IMAGE_NAME="${REPOSITORY}:${TAG}"
       apk update && apk add -q --no-progress python3 py-pip
-      pip3 install -q unittest2 docker==4.0.2
+      pip3 install -q -r merged-stack/tests-requirements.txt
 
       cd merged-stack
       python3 tests.py -vvv
