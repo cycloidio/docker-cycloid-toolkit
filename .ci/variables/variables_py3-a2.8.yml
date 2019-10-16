@@ -16,7 +16,7 @@ registry_password: ((docker_hub.password))
 
 #. registry_tag (required): latest
 #+ tag to put on the builded image.
-registry_tag: "py3-a2.7"
+registry_tag: "py3-a2.8"
 
 #. registry_extra_tags:
 #+ Additional tags to put on the builded image.
@@ -55,7 +55,7 @@ code_dockerfile_location: Dockerfile
 #+ Set build-time variables for the Docker build
 code_build_args:
   PYTHON_VERSION: 3
-  ANSIBLE_VERSION: "2.7.*"
+  ANSIBLE_VERSION: "2.8.*"
 
 #
 # Default variables that shouldn't be changed except if needed
@@ -63,7 +63,7 @@ code_build_args:
 
 #. env (required): ($ environment $)
 #+ Name of the project's environment.
-env: py3-a2.7
+env: py3-a2.8
 
 #. project (required): docker-cycloid-toolkit
 #+ Name of the project.
