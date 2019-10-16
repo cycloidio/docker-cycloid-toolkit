@@ -90,4 +90,4 @@ COPY scripts/* /usr/bin/
 # Patching ansible https://github.com/ansible/ansible/pull/47867
 #  diff -Naur aws_s3.py.orig aws_s3.py > patch
 #  editdiff patch
-RUN patch -i /etc/ansible/patch_s3_object_version $(python${PYTHON_VERSION} -c "import ansible; print('%s/modules/cloud/amazon/aws_s3.py' % ansible.__path__[0])")
+RUN if (( $(echo "$ANSIBLE_VERSION > 2.7" |bc -l) )); then patch -i /etc/ansible/patch_s3_object_version $(python${PYTHON_VERSION} -c "import ansible; print('%s/modules/cloud/amazon/aws_s3.py' % ansible.__path__[0])"); fi
