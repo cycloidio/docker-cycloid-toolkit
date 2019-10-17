@@ -55,6 +55,8 @@ export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
 export EXTRA_ANSIBLE_VARS="${EXTRA_ANSIBLE_VARS:-$EXTRA_VARS}"
 export EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS:-$EXTRA_ARGS}"
 
+export CYCLOID_WORKDIR=$PWD
+
 # Construct vars
 if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
   echo $EXTRA_ANSIBLE_VARS | jq -M . > /tmp/extra_ansible_args.json
@@ -126,6 +128,6 @@ fi
 echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
 
 ansible --version
-ansible-playbook -u $ANSIBLE_REMOTE_USER --vault-password-file=.vault-password $ANSIBLE_PLAYBOOK_NAME --diff ${EXTRA_ANSIBLE_ARGS}
+ansible-playbook -u $ANSIBLE_REMOTE_USER --vault-password-file=.vault-password $ANSIBLE_PLAYBOOK_NAME -e cycloid_workdir=$CYCLOID_WORKDIR --diff ${EXTRA_ANSIBLE_ARGS}
 
 exit $?
