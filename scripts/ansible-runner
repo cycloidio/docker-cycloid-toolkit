@@ -1,42 +1,53 @@
 #!/bin/sh
 
-usage()
-{
-    echo 'You should provide the following env vars :'
-    echo ''
-    echo "$0"
-    echo '  * `(AWS_ACCESS_KEY_ID)` : Used by Amazon EC2 dynamic inventory'
-    echo '  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory'
-    echo '  * `(SSH_PRIVATE_KEY)` : SSH key to use to connect on servers'
-    echo '  * `(SSH_PRIVATE_KEYS)` : SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]'
-    echo '  * `(BASTION_URL)` : SSH url of the bastion server. Example : `admin@myserver.com`'
-    echo '  * `(SSH_JUMP_URL)` : SSH ProxyJump url used with `ssh ProxyJump`. Example : `user1@Bastion1,user2@Bastion2`'
-    echo '  * `(TAGS)`: Only run plays and tasks tagged with these values'
-    echo '  * `(SKIP_TAGS)` : only run plays and tasks whose tags do not match these values'
-    echo '  * `(EXTRA_ANSIBLE_ARGS)` Additional ansible-playbook arguments'
-    echo '  * `(EXTRA_ANSIBLE_VARS)` json dict format. Ansible extra-vars, set additional variables'
-    echo '  * `(ANSIBLE_REMOTE_USER)` default : `admin` Ansible remote user'
-    echo '  * `(ANSIBLE_GALAXY_EXTRA_ARGS)` Additional ansible-galaxy arguments'
-    echo '  * `(ANSIBLE_VAULT_PASSWORD)` : Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files'
-    echo '  * `(ANSIBLE_FORCE_GALAXY)` default `false`. Force to run Ansible galaxy to updated eventual cached ansible roles'
-    echo '  * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml`. Name of the ansible playbook to run'
-    echo '  * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook`. Path of the ansible playbook to run'
-    echo '  * `(DEBUG)` Run in debug mode'
-    echo 'ec2.py vars :'
-    echo '  * `(EC2_VPC_DESTINATION_VARIABLE)` default `private_ip_address`. Can be `ip_address` for public ip address, see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini'
-    echo ''
-    exit 1
-}
-if [ -n "$1" ]; then usage; fi
-
 set -e
 
 if [ -n "$DEBUG" ]; then
   set -x
 fi
 
+usage()
+{
+    echo 'You should provide the following env vars:'
+    echo ''
+    echo "$0"
+    echo '  * `(SSH_PRIVATE_KEY)`: SSH key to use to connect on servers'
+    echo '  * `(SSH_PRIVATE_KEYS)`: SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]'
+    echo '  * `(BASTION_URL)`: [DEPRECATED] SSH URL of the bastion server. Example: `admin@myserver.com`'
+    echo '  * `(SSH_JUMP_URL)`: SSH ProxyJump URL used with `ssh ProxyJump`. Example: `user1@Bastion1,user2@Bastion2`'
+    echo '  * `(TAGS)`: Only run plays and tasks tagged with these values'
+    echo '  * `(SKIP_TAGS)`: Only run plays and tasks whose tags do not match these values'
+    echo '  * `(EXTRA_ANSIBLE_ARGS)`: Additional ansible-playbook arguments'
+    echo '  * `(EXTRA_ANSIBLE_VARS)`: Ansible extra-vars, set additional variables, json dict format.'
+    echo '  * `(ANSIBLE_REMOTE_USER)`: Ansible remote user. Default: `admin`.'
+    echo '  * `(ANSIBLE_GALAXY_EXTRA_ARGS)`: Additional ansible-galaxy arguments'
+    echo '  * `(ANSIBLE_VAULT_PASSWORD)`: Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files'
+    echo '  * `(ANSIBLE_FORCE_GALAXY)`: Force to run Ansible galaxy to updated eventual cached ansible roles. Default: `false`.'
+    echo '  * `(ANSIBLE_PLAYBOOK_NAME)`: Name of the ansible playbook to run. Default: `site.yml`.'
+    echo '  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.'
+    echo '  * `(DEBUG)`: Run in debug mode'
+    echo ''
+    echo 'ec2.py vars:'
+    echo '  * `(AWS_INVENTORY)`: If the Amazon EC2 dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AWS_ACCESS_KEY_ID` is set or not. Default: `auto`.'
+    echo '  * `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory'
+    echo '  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory'
+    echo '  * `(EC2_VPC_DESTINATION_VARIABLE)`: Can be either `ip_address` for public ip address or `private_ip_address`, see [ec2.ini](https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini). Default: `private_ip_address`.'
+    echo ''
+    echo 'azure_rm.py vars:'
+    echo '  * `(AZURE_INVENTORY)`: If the Azure dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AZURE_SUBSCRIPTION_ID` is set or not. Default: `auto`.'
+    echo '  * `(AZURE_SUBSCRIPTION_ID)`: Used by Azure dynamic inventory'
+    echo '  * `(AZURE_TENANT_ID)`: Used by Azure dynamic inventory'
+    echo '  * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory'
+    echo '  * `(AZURE_SECRET)`: Used by Azure dynamic inventory'
+    echo '  * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.'
+    echo ''
+    exit 1
+}
+if [ -n "$1" ]; then usage; fi
+
+#
 # Set defaults
-export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
+#
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
@@ -47,8 +58,15 @@ export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto 
 export ANSIBLE_SSH_ARGS="${ANSIBLE_SSH_ARGS} ${EXTRA_ANSIBLE_SSH_ARGS}"
 export ANSIBLE_FORCE_COLOR="${ANSIBLE_FORCE_COLOR:-true}"
 export ANSIBLE_STDOUT_CALLBACK="${ANSIBLE_STDOUT_CALLBACK:-actionable}"
-# Default env var for ec2.py
+
+# Default envvars for ec2.py
+export AWS_INVENTORY="${AWS_INVENTORY:-auto}"
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
 export EC2_VPC_DESTINATION_VARIABLE="${EC2_VPC_DESTINATION_VARIABLE:-private_ip_address}"
+
+# Default envvars for azure_rm.py
+export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
+export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
 
 # Keep compatibility with old naming of ssh key
 export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
@@ -57,7 +75,9 @@ export EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS:-$EXTRA_ARGS}"
 
 export CYCLOID_WORKDIR=$PWD
 
+#
 # Construct vars
+#
 if [ -n "$EXTRA_ANSIBLE_VARS" ]; then
   echo $EXTRA_ANSIBLE_VARS | jq -M . > /tmp/extra_ansible_args.json
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -e @/tmp/extra_ansible_args.json"
@@ -68,12 +88,18 @@ fi
 if [ -n "$SKIP_TAGS" ]; then
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
 fi
+if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "$AWS_INVENTORY" == "true" ]; then
+  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/ec2.py"
+fi
+if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "$AZURE_INVENTORY" == "true" ]; then
+  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/azure_rm.py"
+fi
 
 if [ "$ANSIBLE_FORCE_GALAXY" == "true" ]; then
   ANSIBLE_GALAXY_EXTRA_ARGS="${ANSIBLE_GALAXY_EXTRA_ARGS} --force"
 fi
 
-# Setup ssh access
+# Setup SSH access
 eval $(ssh-agent -s)
 
 # SSH keys
@@ -105,7 +131,7 @@ fi
 echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
 #export DEFAULT_VAULT_PASSWORD_FILE="$ANSIBLE_PLAYBOOK_PATH/.vault-password"
 
-# Render ec2.ini template from env vars
+# Render ec2.ini template from envvars
 envsubst < /etc/ansible/hosts/ec2.ini.template > /etc/ansible/hosts/ec2.ini
 
 set -x

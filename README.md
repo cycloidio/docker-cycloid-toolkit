@@ -11,23 +11,35 @@ Docker image which contain tools and a scripts for cycloid.io deployment pipelin
 This script use env vars configuration to run ansible playbook with ssh proxy on a bastion.
 
 ./scripts/ansible-runner
-  * `AWS_ACCESS_KEY_ID` : Used by Amazon EC2 dynamic inventory
-  * `AWS_SECRET_ACCESS_KEY`: Used by Amazon EC2 dynamic inventory
-  * `SSH_PRIVATE_KEY` : SSH key to use to connect on servers
-  * `(BASTION_URL)` : SSH url of the bastion server. Exemple : `admin@myserver.com`
-  * `(SSH_JUMP_URL)` : SSH ProxyJump url used with `ssh ProxyJump`. Example : `user1@Bastion1,user2@Bastion2`
+  * `(SSH_PRIVATE_KEY)`: SSH key to use to connect on servers
+  * `(SSH_PRIVATE_KEYS)`: SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]
+  * `(BASTION_URL)`: [DEPRECATED] SSH URL of the bastion server. Example: `admin@myserver.com`
+  * `(SSH_JUMP_URL)`: SSH ProxyJump URL used with `ssh ProxyJump`. Example: `user1@Bastion1,user2@Bastion2`
   * `(TAGS)`: Only run plays and tasks tagged with these values
-  * `(SKIP_TAGS)` : only run plays and tasks whose tags do not match these values
-  * `(EXTRA_ANSIBLE_ARGS)` Additional ansible-playbook arguments
-  * `(EXTRA_ANSIBLE_VARS)` json dict format. Ansible extra-vars, set additional variables
-  * `(ANSIBLE_REMOTE_USER)` default : `admin` Ansible remote user
-  * `(ANSIBLE_GALAXY_EXTRA_ARGS)` Additional ansible-galaxy arguments
-  * `(ANSIBLE_VAULT_PASSWORD)` : Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files
-  * `(ANSIBLE_FORCE_GALAXY)` default `false`. Force to run Ansible galaxy to updated eventual cached ansible roles
-  * `(ANSIBLE_PLAYBOOK_NAME)` default : `site.yml` Name of the ansible playbook to run
-  * `(ANSIBLE_PLAYBOOK_PATH)` default : `ansible-playbook` Path of the ansible playbook to run
-ec2.py vars :
-  * `(EC2_VPC_DESTINATION_VARIABLE)` default `private_ip_address`. Can be `ip_address` for public ip address, see https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini
+  * `(SKIP_TAGS)`: Only run plays and tasks whose tags do not match these values
+  * `(EXTRA_ANSIBLE_ARGS)`: Additional ansible-playbook arguments
+  * `(EXTRA_ANSIBLE_VARS)`: Ansible extra-vars, set additional variables, json dict format.
+  * `(ANSIBLE_REMOTE_USER)`: Ansible remote user. Default: `admin`.
+  * `(ANSIBLE_GALAXY_EXTRA_ARGS)`: Additional ansible-galaxy arguments
+  * `(ANSIBLE_VAULT_PASSWORD)`: Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files
+  * `(ANSIBLE_FORCE_GALAXY)`: Force to run Ansible galaxy to updated eventual cached ansible roles. Default: `false`.
+  * `(ANSIBLE_PLAYBOOK_NAME)`: Name of the ansible playbook to run. Default: `site.yml`.
+  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.
+  * `(DEBUG)`: Run in debug mode
+
+ec2.py vars:
+  * `(AWS_INVENTORY)`: If the Amazon EC2 dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AWS_ACCESS_KEY_ID` is set or not. Default: `auto`.
+  * `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory
+  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory
+  * `(EC2_VPC_DESTINATION_VARIABLE)`: Can be either `ip_address` for public ip address or `private_ip_address`, see [ec2.ini](https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini). Default: `private_ip_address`.
+
+azure_rm.py vars:
+  * `(AZURE_INVENTORY)`: If the Azure dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AZURE_SUBSCRIPTION_ID` is set or not. Default: `auto`.
+  * `(AZURE_SUBSCRIPTION_ID)`: Used by Azure dynamic inventory
+  * `(AZURE_TENANT_ID)`: Used by Azure dynamic inventory
+  * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory
+  * `(AZURE_SECRET)`: Used by Azure dynamic inventory
+  * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.
 
 Example of pipeline configuration :
 
@@ -58,7 +70,7 @@ shared:
     - task: run-ansible
       <<: *run-ansible-from-bastion
       params:
-        BASTION_URL: ((bastion_url))
+        SSH_JUMP_URL: ((bastion_url))
         SSH_PRIVATE_KEY: ((bastion_ssh.ssh_key))
         SSH_PRIVATE_KEYS:
           - ((user1_ssh.ssh_key))

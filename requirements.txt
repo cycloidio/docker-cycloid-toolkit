@@ -3,3 +3,4 @@ boto
 boto3
 pyOpenSSL
 openshift
+azure
