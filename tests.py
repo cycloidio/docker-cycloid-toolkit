@@ -232,8 +232,6 @@ class AnsibleRunnerTestCase(TestCase):
     def setUp(self):
         super().setUp()
         environment={
-            'AWS_ACCESS_KEY_ID': 'foo',
-            'AWS_SECRET_ACCESS_KEY': 'bar',
             'SSH_PRIVATE_KEY': '''-----BEGIN RSA PRIVATE KEY-----
 MIICWgIBAAKBgQC6W6OIBOiewkaKBz73bQkv0dqfiUEOrNI0+zWEc3SaaLhz8k1k
 Nug+K+0nEh4GbP82wx+1bLd+KeJUg4EX4kmgHY8Yg8aLkcbSC6kMMqfrRsN2HG4W
@@ -358,23 +356,87 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertTrue(self.output_contains(r.output, '.*ProxyJump=admin@bastion1,admin@bastion2'))
         self.assertEquals(r.exit_code, 0)
 
-
-
     def test_ec2_hosts_inventory(self):
+        # default vpc_destination_variable should be private_ip_address
+        # EC2 dynamic inventory should not be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertEquals(r.exit_code, 0)
+        
         r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
         self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable .+private_ip_address'))
 
+        # vpc_destination_variable should be ip_address
+        # EC2 dynamic inventory should be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is present
         environment={
+            'AWS_ACCESS_KEY_ID': 'foo',
             'EC2_VPC_DESTINATION_VARIABLE': 'ip_address',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
         self.assertEquals(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
         self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable .+ip_address'))
 
-    
+        # EC2 dynamic inventory should be used as AWS_INVENTORY=true even if AWS_ACCESS_KEY_ID is not present
+        environment={
+            'AWS_INVENTORY': 'true',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertEquals(r.exit_code, 0)
+
+        # EC2 dynamic inventory should not be used as AWS_INVENTORY=false even if AWS_ACCESS_KEY_ID is present
+        environment={
+            'AWS_INVENTORY': 'false',
+            'AWS_ACCESS_KEY_ID': 'foo',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertEquals(r.exit_code, 0)
+
+    def test_azure_hosts_inventory(self):
+        # Azure dynamic inventory should not be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is not present
+        r = self.drun(cmd="/usr/bin/ansible-runner")
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        self.assertEquals(r.exit_code, 0)
+
+        # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is present
+        environment={
+            'AZURE_SUBSCRIPTION_ID': 'foo',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        self.assertEquals(r.exit_code, 0)
+
+        # Azure dynamic inventory should be used as AZURE_INVENTORY=true even if AZURE_SUBSCRIPTION_ID is not present
+        environment={
+            'AZURE_INVENTORY': 'true',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        self.assertEquals(r.exit_code, 0)
+
+        # Azure dynamic inventory should not be used as AZURE_INVENTORY=false even if AZURE_SUBSCRIPTION_ID is present
+        environment={
+            'AZURE_INVENTORY': 'false',
+            'AZURE_SUBSCRIPTION_ID': 'foo',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        self.assertEquals(r.exit_code, 0)
+
+    def test_ec2_and_azure_hosts_inventory(self):
+        # EC2 dynamic inventory should be used as AWS_INVENTORY defaults to auto and AWS_ACCESS_KEY_ID is present
+        # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is present
+        environment={
+            'AZURE_SUBSCRIPTION_ID': 'foo',
+            'AWS_ACCESS_KEY_ID': 'bar',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
+        self.assertEquals(r.exit_code, 0)
 
 if __name__ == '__main__':
     unittest.main()
