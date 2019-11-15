@@ -9,6 +9,7 @@ set -e
 # source .env/bin/activate
 # pip install unittest2 docker
 
+export DOCKER_REPO="${DOCKER_REPO:-cycloid/cycloid-toolkit}"
 export DOCKER_TAG="${DOCKER_TAG:-develop}"
 
 
@@ -24,8 +25,8 @@ for line in $(cat .versions); do
         tag=$DOCKER_TAG
     fi
 
-    export IMAGE_NAME="cycloid/cycloid-toolkit:${tag}"
-    echo "######################## $IMAGE_NAME"
-    python tests.py
+    export IMAGE_NAME="${DOCKER_REPO}:${tag}"
+    echo "######## IMAGE_NAME=${IMAGE_NAME} PYTHON_VERSION=${python_version} ANSIBLE_VERSION=${ansible_version%.*}"
+    python tests.py -vvvv
 done
 unset IFS

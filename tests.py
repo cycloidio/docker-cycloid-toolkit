@@ -262,6 +262,11 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                                    volumes={osjoin(os.getcwd(), '%s/ansible-runner' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
                                    environment=environment,
                                   )
+        r = self.drun(cmd="python -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
+        self.python_version = r.output.decode('utf-8').rstrip()
+
+        r = self.drun(cmd="python -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
+        self.ansible_version = r.output.decode('utf-8').rstrip()
 
     def test_ansible_galaxy(self):
         # Run ansible galaxy
@@ -400,6 +405,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         # Azure dynamic inventory should not be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
         self.assertEquals(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is present
@@ -407,7 +413,10 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AZURE_SUBSCRIPTION_ID': 'foo',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        if float(self.ansible_version) >= 2.7:
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+        else:
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEquals(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY=true even if AZURE_SUBSCRIPTION_ID is not present
@@ -415,7 +424,10 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AZURE_INVENTORY': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        if float(self.ansible_version) >= 2.7:
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+        else:
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEquals(r.exit_code, 0)
 
         # Azure dynamic inventory should not be used as AZURE_INVENTORY=false even if AZURE_SUBSCRIPTION_ID is present
@@ -425,6 +437,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
         self.assertEquals(r.exit_code, 0)
 
     def test_ec2_and_azure_hosts_inventory(self):
@@ -435,7 +448,10 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AWS_ACCESS_KEY_ID': 'bar',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
+        if float(self.ansible_version) >= 2.7:
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+        else:
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEquals(r.exit_code, 0)
 
 if __name__ == '__main__':
