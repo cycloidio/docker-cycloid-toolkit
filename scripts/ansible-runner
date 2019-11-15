@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -48,6 +48,7 @@ if [ -n "$1" ]; then usage; fi
 #
 # Set defaults
 #
+export ANSIBLE_VERSION="$(ansible --version | head -n1 | awk '{print $2}')"
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
@@ -67,6 +68,10 @@ export EC2_VPC_DESTINATION_VARIABLE="${EC2_VPC_DESTINATION_VARIABLE:-private_ip_
 # Default envvars for azure_rm.py
 export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
 export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
+export ANSIBLE_PLUGIN_AZURE_HOST="(public_dns_hostnames + public_ipv4_addresses) | first"
+if [ "${AZURE_USE_PRIVATE_IP,,}" == "true" ]; then
+    export ANSIBLE_PLUGIN_AZURE_HOST="private_ipv4_addresses | first"
+fi
 
 # Keep compatibility with old naming of ssh key
 export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
@@ -88,14 +93,18 @@ fi
 if [ -n "$SKIP_TAGS" ]; then
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
 fi
-if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "$AWS_INVENTORY" == "true" ]; then
+if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "${AWS_INVENTORY,,}" == "true" ]; then
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/ec2.py"
 fi
-if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "$AZURE_INVENTORY" == "true" ]; then
-  EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/azure_rm.py"
+if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${AZURE_INVENTORY,,}" == "true" ]; then
+  if (( $(echo "${ANSIBLE_VERSION%.*} >= 2.7" |bc -l) )); then
+    EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/default.azure_rm.yml"
+  else
+    EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/azure_rm.py"
+  fi
 fi
 
-if [ "$ANSIBLE_FORCE_GALAXY" == "true" ]; then
+if [ "${ANSIBLE_FORCE_GALAXY,,}" == "true" ]; then
   ANSIBLE_GALAXY_EXTRA_ARGS="${ANSIBLE_GALAXY_EXTRA_ARGS} --force"
 fi
 
@@ -133,6 +142,9 @@ echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
 
 # Render ec2.ini template from envvars
 envsubst < /etc/ansible/hosts/ec2.ini.template > /etc/ansible/hosts/ec2.ini
+
+# Render default.azure_rm.yml template from envvars
+envsubst < /etc/ansible/hosts/default.azure_rm.yml.template > /etc/ansible/hosts/default.azure_rm.yml
 
 set -x
 
