@@ -36,7 +36,7 @@ code_git_repository_name: cycloidio/cycloid-images
 
 #. code_git_repository (required): git@github.com:MyUser/code-magento.git
 #+ Git repository url containing the code of the stack.
-code_git_repository: git@github.com:cycloidio/cycloid-images.git
+code_git_repository: git@github.com:cycloidio/docker-cycloid-toolkit.git
 
 #. code_git_branch (required): master
 #+ Branch of the code git repository.
@@ -48,7 +48,7 @@ code_git_private_key: ((git_github.ssh_key))
 
 #. code_build_context (required): .
 #+ Path from the repository root to the files to build. The Dockerfile location is relative to this path.
-code_build_context: cycloid-toolkit
+code_build_context: .
 
 #. code_dockerfile_location (required): Dockerfile
 #+ Dockerfile location related to code_build_context
