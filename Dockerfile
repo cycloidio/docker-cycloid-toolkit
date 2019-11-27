@@ -85,6 +85,6 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
     && cp /etc/endpoints_new.json $(python${PYTHON_VERSION} -c "import boto; print('%s/endpoints.json' % boto.__path__[0])")
 
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
-COPY files/ansible/ /etc/ansible/
+COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
 

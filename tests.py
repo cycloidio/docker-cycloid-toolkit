@@ -367,10 +367,9 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         r = self.drun(cmd="/usr/bin/ansible-runner")
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
         self.assertEquals(r.exit_code, 0)
-        
-        r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
-        self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable .+private_ip_address'))
 
+        # assert that no ec2 inventory will be loaded from /etc/ansible/hosts
+        self.assertFalse(os.path.exists("/etc/ansible/hosts/ec2.ini"))
         # vpc_destination_variable should be ip_address
         # EC2 dynamic inventory should be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is present
         environment={

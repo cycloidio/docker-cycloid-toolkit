@@ -94,12 +94,18 @@ if [ -n "$SKIP_TAGS" ]; then
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
 fi
 if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "${AWS_INVENTORY,,}" == "true" ]; then
+  # Render ec2.ini template from envvars
+  envsubst < /etc/ansible/hosts-template/ec2.ini.template > /etc/ansible/hosts/ec2.ini
+  cp /etc/ansible/hosts-template/ec2.py /etc/ansible/hosts/
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/ec2.py"
 fi
 if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${AZURE_INVENTORY,,}" == "true" ]; then
   if (( $(echo "${ANSIBLE_VERSION%.*} >= 2.7" |bc -l) )); then
+    # Render default.azure_rm.yml template from envvars
+    envsubst < /etc/ansible/hosts-template/default.azure_rm.yml.template > /etc/ansible/hosts/default.azure_rm.yml
     EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/default.azure_rm.yml"
   else
+    cp /etc/ansible/hosts-template/azure_rm.py /etc/ansible/hosts/
     EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/azure_rm.py"
   fi
 fi
@@ -140,11 +146,6 @@ fi
 echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
 #export DEFAULT_VAULT_PASSWORD_FILE="$ANSIBLE_PLAYBOOK_PATH/.vault-password"
 
-# Render ec2.ini template from envvars
-envsubst < /etc/ansible/hosts/ec2.ini.template > /etc/ansible/hosts/ec2.ini
-
-# Render default.azure_rm.yml template from envvars
-envsubst < /etc/ansible/hosts/default.azure_rm.yml.template > /etc/ansible/hosts/default.azure_rm.yml
 
 set -x
 
