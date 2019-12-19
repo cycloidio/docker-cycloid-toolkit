@@ -412,7 +412,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AZURE_SUBSCRIPTION_ID': 'foo',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        if float(self.ansible_version) >= 2.7:
+        if float(self.ansible_version) >= 2.8:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
@@ -423,7 +423,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AZURE_INVENTORY': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        if float(self.ansible_version) >= 2.7:
+        if float(self.ansible_version) >= 2.8:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
@@ -447,7 +447,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AWS_ACCESS_KEY_ID': 'bar',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        if float(self.ansible_version) >= 2.7:
+        if float(self.ansible_version) >= 2.8:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/default.azure_rm.yml'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
