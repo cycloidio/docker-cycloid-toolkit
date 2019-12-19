@@ -40,6 +40,7 @@ usage()
     echo '  * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_SECRET)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.'
+    echo '  * `(ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES)`: By default this plugin will use globally unique host names. This option allows you to override that, and use the name that matches the old inventory script naming.. Default: `False`.'
     echo '  note: Ansible `azure_rm` plugin is used for ansible `>= 2.8` else `azure_rm.py` script will be used'
     echo ''
     exit 1
@@ -71,6 +72,7 @@ export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
 # Make sure args work for Ansible azure rm and https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py
 export AZURE_TENANT="${AZURE_TENANT:-$AZURE_TENANT_ID}"
 export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
+export ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES="${ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES:-False}"
 export ANSIBLE_PLUGIN_AZURE_HOST="(public_dns_hostnames + public_ipv4_addresses) | first"
 if [ "${AZURE_USE_PRIVATE_IP,,}" == "true" ]; then
     export ANSIBLE_PLUGIN_AZURE_HOST="private_ipv4_addresses | first"
