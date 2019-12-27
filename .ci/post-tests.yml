@@ -18,50 +18,15 @@ run:
       mount
 
       mkdir -p /sys/fs/cgroup
-      mountpoint -q /sys/fs/cgroup || \
-      mount -t tmpfs -o uid=0,gid=0,mode=0755 cgroup /sys/fs/cgroup
-       
-      mount -o remount,rw /sys/fs/cgroup
-      echo " ---- Mounted"
+      mount -t tmpfs -o uid=0,gid=0,mode=0755,rw cgroup /sys/fs/cgroup
+
       sed -e 1d /proc/cgroups | while read sys hierarchy num enabled; do
-      if [ "$enabled" != "1" ]; then
-        # subsystem disabled; skip
-        continue
-      fi
+      if [ "$enabled" != "1" ]; then continue; fi
        
-      echo " ---- grouping"
-      grouping="$(cat /proc/self/cgroup | cut -d: -f2 | grep "\\<$sys\\>")"
-      if [ -z "$grouping" ]; then
-        # subsystem not mounted anywhere; mount it on its own
-        echo " ---- grouping -> $sys"
-        grouping="$sys"
-      fi
-      echo " ---- grouping <- $grouping"
-       
-      mountpoint="/sys/fs/cgroup/$grouping"
-       
+      mountpoint="/sys/fs/cgroup/$sys"
       mkdir -p "$mountpoint"
-       
-      # clear out existing mount to make sure new one is read-write
-      echo " ---- checkmount $mountpoint"
-      if mountpoint -q "$mountpoint"; then
-      echo " ---- umount $mountpoint"
-        umount "$mountpoint"
-      fi
-       
       mount -n -t cgroup -o "$grouping" cgroup "$mountpoint"
        
-      if [ "$grouping" != "$sys" ]; then
-        if [ -L "/sys/fs/cgroup/$sys" ]; then
-          echo " ---- do rm"
-          echo rm "/sys/fs/cgroup/$sys"
-          rm "/sys/fs/cgroup/$sys"
-        fi
-       
-        echo " ---- do symlink"
-        echo ln -s "$mountpoint" "/sys/fs/cgroup/$sys"
-        ln -s "$mountpoint" "/sys/fs/cgroup/$sys"
-      fi
       done
 
       #/usr/local/bin/dockerd-entrypoint.sh --log-level error 2> docker.log &
