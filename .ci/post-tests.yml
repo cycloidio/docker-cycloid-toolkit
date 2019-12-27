@@ -18,15 +18,10 @@ run:
       if [ "$enabled" != "1" ]; then continue; fi
        
       grouping="$(cat /proc/self/cgroup | cut -d: -f2 | grep "\\<$sys\\>")"
-      if [ -z "$grouping" ]; then
-        # subsystem not mounted anywhere; mount it on its own
-        grouping="$sys"
-      fi
-       
+      if [ -z "$grouping" ]; then grouping="$sys"; fi
       mountpoint="/sys/fs/cgroup/$grouping"
 
-      mkdir -p "$mountpoint"
-      mountpoint -q "$mountpoint" && umount "$mountpoint"
+      mkdir -p "$mountpoint" ; mountpoint -q "$mountpoint" && umount "$mountpoint"
       mount -n -t cgroup -o "$grouping" cgroup "$mountpoint"
        
       done
