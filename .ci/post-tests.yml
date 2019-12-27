@@ -47,7 +47,7 @@ run:
       
         ln -s "$mountpoint" "/sys/fs/cgroup/$sys"
       fi
-
+      done
 
       #/usr/local/bin/dockerd-entrypoint.sh --log-level error 2> docker.log &
       /usr/local/bin/dockerd-entrypoint.sh &
