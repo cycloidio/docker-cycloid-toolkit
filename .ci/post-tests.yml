@@ -10,7 +10,6 @@ run:
   args:
     - '-xc'
     - |
-
       # Fix Devices cgroup isn't mounted error
       # From https://stackoverflow.com/questions/49096645/running-docker-on-docker-in-concourse?rq=1
       mkdir -p /sys/fs/cgroup; mount -t tmpfs -o uid=0,gid=0,mode=0755,rw cgroup /sys/fs/cgroup
@@ -22,7 +21,6 @@ run:
         mkdir -p "$mountpoint" ; mountpoint -q "$mountpoint" && umount "$mountpoint"
         mount -n -t cgroup -o "$grouping" cgroup "$mountpoint"
       done
-
       /usr/local/bin/dockerd-entrypoint.sh --log-level error 2> docker.log &
       timeout 60 sh -c "until docker info >/dev/null 2>&1; do echo waiting for docker to come up...; sleep 1; done"
       mount | grep "none on /tmp type tmpfs" && umount /tmp
