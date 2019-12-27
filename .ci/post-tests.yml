@@ -25,7 +25,8 @@ run:
 
       rc=$?
       pkill -TERM dockerd
-      exit $rc
+      echo $rc
+      exit 1
 inputs:
 - name: merged-stack
 - name: image
