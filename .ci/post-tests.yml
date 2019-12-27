@@ -28,6 +28,7 @@ run:
       mount -n -t cgroup -o "$grouping" cgroup "$mountpoint"
        
       done
+      mount
 
       #/usr/local/bin/dockerd-entrypoint.sh --log-level error 2> docker.log &
       /usr/local/bin/dockerd-entrypoint.sh &
