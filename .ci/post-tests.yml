@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: docker
-    tag: 19.03.5-dind
+    tag: 18.09.9-dind
 run:
   path: /bin/sh
   args:
