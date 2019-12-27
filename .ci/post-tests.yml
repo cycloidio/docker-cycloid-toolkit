@@ -18,10 +18,8 @@ run:
        
       grouping="$(cat /proc/self/cgroup | cut -d: -f2 | grep "\\<$sys\\>")"
       if [ -z "$grouping" ]; then grouping="$sys"; fi
+      grouping="$sys"
       mountpoint="/sys/fs/cgroup/$grouping"
-
-      echo "$mountpoint"
-      echo "/sys/fs/cgroup/$sys"
       mkdir -p "$mountpoint" ; mountpoint -q "$mountpoint" && umount "$mountpoint"
       mount -n -t cgroup -o "$grouping" cgroup "$mountpoint"
        
