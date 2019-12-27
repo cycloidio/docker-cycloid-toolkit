@@ -13,7 +13,6 @@ run:
 
       mkdir -p /sys/fs/cgroup; mount -t tmpfs -o uid=0,gid=0,mode=0755,rw cgroup /sys/fs/cgroup
 
-      cat /proc/cgroups
       sed -e 1d /proc/cgroups | while read sys hierarchy num enabled; do
       if [ "$enabled" != "1" ]; then continue; fi
        
@@ -21,6 +20,8 @@ run:
       if [ -z "$grouping" ]; then grouping="$sys"; fi
       mountpoint="/sys/fs/cgroup/$grouping"
 
+      echo "$mountpoint"
+      echo "/sys/fs/cgroup/$sys"
       mkdir -p "$mountpoint" ; mountpoint -q "$mountpoint" && umount "$mountpoint"
       mount -n -t cgroup -o "$grouping" cgroup "$mountpoint"
        
