@@ -25,6 +25,7 @@ run:
        
       mountpoint="/sys/fs/cgroup/$sys"
       mkdir -p "$mountpoint"
+      mountpoint -q "$mountpoint" && umount "$mountpoint"
       mount -n -t cgroup -o "$grouping" cgroup "$mountpoint"
        
       done
