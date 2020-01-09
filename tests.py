@@ -421,10 +421,13 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         # Azure dynamic inventory should be used as AZURE_INVENTORY=true even if AZURE_SUBSCRIPTION_ID is not present
         environment={
             'AZURE_INVENTORY': 'true',
+            'ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         if float(self.ansible_version) >= 2.8:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+            self.assertTrue(self.output_contains(r.output, '^plain_host_names:.*true'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEquals(r.exit_code, 0)

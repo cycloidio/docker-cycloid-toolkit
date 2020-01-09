@@ -40,6 +40,7 @@ azure_rm vars:
   * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory
   * `(AZURE_SECRET)`: Used by Azure dynamic inventory
   * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.
+  * `(ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES)`: By default this plugin will use globally unique host names. This option allows you to override that, and use the name that matches the old inventory script naming.. Default: `False`.
   note: Ansible `azure_rm` plugin is used for ansible `>= 2.8` else `azure_rm.py` script will be used
 
 Example of pipeline configuration :
