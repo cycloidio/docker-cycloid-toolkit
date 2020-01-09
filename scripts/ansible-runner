@@ -27,19 +27,20 @@ usage()
     echo '  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.'
     echo '  * `(DEBUG)`: Run in debug mode'
     echo ''
-    echo 'ec2.py vars:'
+    echo 'ec2 vars:'
     echo '  * `(AWS_INVENTORY)`: If the Amazon EC2 dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AWS_ACCESS_KEY_ID` is set or not. Default: `auto`.'
     echo '  * `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory'
     echo '  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory'
     echo '  * `(EC2_VPC_DESTINATION_VARIABLE)`: Can be either `ip_address` for public ip address or `private_ip_address`, see [ec2.ini](https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini). Default: `private_ip_address`.'
     echo ''
-    echo 'azure_rm.py vars:'
+    echo 'azure_rm vars:'
     echo '  * `(AZURE_INVENTORY)`: If the Azure dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AZURE_SUBSCRIPTION_ID` is set or not. Default: `auto`.'
     echo '  * `(AZURE_SUBSCRIPTION_ID)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_TENANT_ID)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_SECRET)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.'
+    echo '  note: Ansible `azure_rm` plugin is used for ansible `>= 2.8` else `azure_rm.py` script will be used'
     echo ''
     exit 1
 }
@@ -67,6 +68,8 @@ export EC2_VPC_DESTINATION_VARIABLE="${EC2_VPC_DESTINATION_VARIABLE:-private_ip_
 
 # Default envvars for azure_rm.py
 export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
+# Make sure args work for Ansible azure rm and https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py
+export AZURE_TENANT="${AZURE_TENANT:-$AZURE_TENANT_ID}"
 export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
 export ANSIBLE_PLUGIN_AZURE_HOST="(public_dns_hostnames + public_ipv4_addresses) | first"
 if [ "${AZURE_USE_PRIVATE_IP,,}" == "true" ]; then
@@ -100,7 +103,7 @@ if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "${AWS_INV
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/ec2.py"
 fi
 if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${AZURE_INVENTORY,,}" == "true" ]; then
-  if (( $(echo "${ANSIBLE_VERSION%.*} >= 2.7" |bc -l) )); then
+  if (( $(echo "${ANSIBLE_VERSION%.*} >= 2.8" |bc -l) )); then
     # Render default.azure_rm.yml template from envvars
     envsubst < /etc/ansible/hosts-template/default.azure_rm.yml.template > /etc/ansible/hosts/default.azure_rm.yml
     EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/default.azure_rm.yml"

@@ -27,19 +27,20 @@ This script use env vars configuration to run ansible playbook with ssh proxy on
   * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.
   * `(DEBUG)`: Run in debug mode
 
-ec2.py vars:
+ec2 vars:
   * `(AWS_INVENTORY)`: If the Amazon EC2 dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AWS_ACCESS_KEY_ID` is set or not. Default: `auto`.
   * `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory
   * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory
   * `(EC2_VPC_DESTINATION_VARIABLE)`: Can be either `ip_address` for public ip address or `private_ip_address`, see [ec2.ini](https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini). Default: `private_ip_address`.
 
-azure_rm.py vars:
+azure_rm vars:
   * `(AZURE_INVENTORY)`: If the Azure dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AZURE_SUBSCRIPTION_ID` is set or not. Default: `auto`.
   * `(AZURE_SUBSCRIPTION_ID)`: Used by Azure dynamic inventory
   * `(AZURE_TENANT_ID)`: Used by Azure dynamic inventory
   * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory
   * `(AZURE_SECRET)`: Used by Azure dynamic inventory
   * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.
+  note: Ansible `azure_rm` plugin is used for ansible `>= 2.8` else `azure_rm.py` script will be used
 
 Example of pipeline configuration :
 
