@@ -19,7 +19,7 @@ import docker
 # virtualenv -p python3 --clear .env
 # source .env/bin/activate
 # pip install unittest2 docker
-# 
+#
 # python tests.py
 
 # Debug print command that you can use
@@ -314,7 +314,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 
         r = self.drun(cmd="cat playbook/.vault-password")
         self.assertTrue(self.output_contains(r.output, '.*password'))
-    
+
 
     def test_extra_args(self):
         environment={
@@ -428,9 +428,44 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
             r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
             self.assertTrue(self.output_contains(r.output, '^plain_host_names:.*true'))
+            # default ANSIBLE_PLUGIN_AZURE_HOST
+            self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*private_ipv4_addresses \+ public_dns_hostnames \+ public_ipv4_addresses'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEquals(r.exit_code, 0)
+
+        # Azure dynamic inventory configuration
+        if float(self.ansible_version) >= 2.8:
+            # Override ANSIBLE_PLUGIN_AZURE_HOST
+            environment={
+                'AZURE_INVENTORY': 'true',
+                'AZURE_USE_PRIVATE_IP': 'True',
+                'ANSIBLE_PLUGIN_AZURE_HOST': 'foo',
+                'DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE': 'bar',
+                'DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST': 'bli',
+            }
+            self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+            self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*foo'))
+
+            # AZURE_USE_PRIVATE_IP true
+            environment={
+                'AZURE_INVENTORY': 'true',
+                'AZURE_USE_PRIVATE_IP': 'True',
+                'DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE': 'bar',
+                'DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST': 'bli',
+            }
+            self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+            self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*bar'))
+
+            # AZURE_USE_PRIVATE_IP false
+            environment={
+                'AZURE_INVENTORY': 'true',
+            }
+            self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+            self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*bli'))
 
         # Azure dynamic inventory should not be used as AZURE_INVENTORY=false even if AZURE_SUBSCRIPTION_ID is present
         environment={
@@ -455,6 +490,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEquals(r.exit_code, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

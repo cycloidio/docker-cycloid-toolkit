@@ -47,7 +47,7 @@ Example of pipeline configuration :
 
 **YAML anchors**
 
-```
+```YAML
 shared:
   - &run-ansible-from-bastion
     config:
@@ -68,7 +68,7 @@ shared:
 
 **usage**
 
-```
+```YAML
     - task: run-ansible
       <<: *run-ansible-from-bastion
       params:
@@ -100,7 +100,7 @@ Example of pipeline configuration :
 
 **YAML anchors**
 
-```
+```YAML
 shared:
   - &aws-ami-cleaner
     task: aws-ami-cleaner
@@ -138,7 +138,7 @@ Example of pipeline configuration :
 
 **YAML anchors**
 
-```
+```YAML
 shared:
   - &aws-ecr-cleaner
     task: aws-ecr-cleaner
@@ -180,7 +180,7 @@ Example of pipeline configuration :
 
 **YAML anchors**
 
-```
+```YAML
 shared:
   - &vault-approle-login
     task: vault-approle-login
@@ -217,7 +217,7 @@ This script use env vars configuration to merge stack and config for Cycloid.io.
 
 **YAML anchors**
 
-```
+```YAML
 shared:
   - &merge-stack-and-config
     platform: linux
@@ -236,7 +236,7 @@ shared:
 
 **usage**
 
-```
+```YAML
     - task: merge-stack-and-config
       config:
         <<: *merge-stack-and-config
@@ -251,6 +251,21 @@ shared:
       params:
         CONFIG_PATH: ((project))/ansible
         STACK_PATH: stack-((project))/ansible
+```
+
+
+# Build and test a local image
+
+```bash
+export IMAGE_NAME="cycloid/cycloid-toolkit:develop"
+export PYTHON_VERSION=3
+export ANSIBLE_VERSION=2.8.*
+docker build -t $IMAGE_NAME --build-arg=PYTHON_VERSION="$PYTHON_VERSION" --build-arg=ANSIBLE_VERSION="$ANSIBLE_VERSION" .
+
+virtualenv -p python3 --clear .env
+source .env/bin/activate
+pip install unittest2 docker
+python tests.py -v
 ```
 
 
