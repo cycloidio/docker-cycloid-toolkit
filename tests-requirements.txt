@@ -1,2 +1,2 @@
 unittest2
-docker==4.1.0
+docker==4.2.0
