@@ -68,15 +68,14 @@ export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
 export EC2_VPC_DESTINATION_VARIABLE="${EC2_VPC_DESTINATION_VARIABLE:-private_ip_address}"
 
 # Default envvars for azure_rm.py
+export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST:-"(public_dns_hostnames + public_ipv4_addresses + private_ipv4_addresses) | first"}"
+export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE:-"(private_ipv4_addresses + public_dns_hostnames + public_ipv4_addresses) | first"}"
 export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
 # Make sure args work for Ansible azure rm and https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py
 export AZURE_TENANT="${AZURE_TENANT:-$AZURE_TENANT_ID}"
 export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
 export ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES="${ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES:-False}"
-export ANSIBLE_PLUGIN_AZURE_HOST="(public_dns_hostnames + public_ipv4_addresses) | first"
-if [ "${AZURE_USE_PRIVATE_IP,,}" == "true" ]; then
-    export ANSIBLE_PLUGIN_AZURE_HOST="private_ipv4_addresses | first"
-fi
+export ANSIBLE_PLUGIN_AZURE_HOST="${ANSIBLE_PLUGIN_AZURE_HOST:-""}"
 
 # Keep compatibility with old naming of ssh key
 export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
@@ -103,6 +102,13 @@ if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "${AWS_INV
   envsubst < /etc/ansible/hosts-template/ec2.ini.template > /etc/ansible/hosts/ec2.ini
   cp /etc/ansible/hosts-template/ec2.py /etc/ansible/hosts/
   EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS} -i /etc/ansible/hosts/ec2.py"
+fi
+if [ -z "${ANSIBLE_PLUGIN_AZURE_HOST}" ]; then
+  if [ "${AZURE_USE_PRIVATE_IP,,}" == "true" ]; then
+      export ANSIBLE_PLUGIN_AZURE_HOST="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE}"
+  else
+      export ANSIBLE_PLUGIN_AZURE_HOST="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST}"
+  fi
 fi
 if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${AZURE_INVENTORY,,}" == "true" ]; then
   if (( $(echo "${ANSIBLE_VERSION%.*} >= 2.8" |bc -l) )); then
