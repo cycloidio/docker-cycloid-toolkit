@@ -48,6 +48,9 @@ hostvar_expressions:
   # if none are found, the first public IP address.
   ansible_host: $ANSIBLE_PLUGIN_AZURE_HOST
 
+# By default this plugin will use globally unique host names. This option allows you to override that, and use the name that matches the old inventory script naming.
+plain_host_names: $ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES
+
 # places hosts in dynamically-created groups based on a variable value.
 keyed_groups:
 # places each host in a group named 'tag_(tag name)_(tag value)' for each tag on a VM.
