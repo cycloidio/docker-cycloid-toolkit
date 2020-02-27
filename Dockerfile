@@ -49,7 +49,8 @@ RUN ln -s /lib /lib64 \
     && \
         pip${PYTHON_VERSION} install pip --upgrade && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
-        pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} \
+        # avoid Jinja 2.11 until https://github.com/pallets/jinja/issues/1138
+        pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} Jinja2==2.8 \
     && \
         ln -s $(which python${PYTHON_VERSION}) /bin/python \
     && \
