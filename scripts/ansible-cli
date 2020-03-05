@@ -11,40 +11,34 @@ usage()
     echo 'You should provide the following env vars:'
     echo ''
     echo "$0"
+    echo '  * `(ANSIBLE_MODULE)`: Module to use. Default: `shell`'
+    echo '  * `(ANSIBLE_MODULE_ARGS)`: Ad-hoc command to use with the module. Exemple: "echo foo"'
+    echo '  * `(ANSIBLE_TARGET_PATTERN)`: which managed nodes or groups you want to execute against. Default: `all`'
+    echo '  * `(ANSIBLE_LIMIT_HOSTS)`: select a subset of the inventory'
     echo '  * `(SSH_PRIVATE_KEY)`: SSH key to use to connect on servers'
     echo '  * `(SSH_PRIVATE_KEYS)`: SSH key array to use to connect on servers. Example: ["PRIVATE_KEY","PRIVATE_KEY"]'
     echo '  * `(BASTION_URL)`: [DEPRECATED] SSH URL of the bastion server. Example: `admin@myserver.com`'
     echo '  * `(SSH_JUMP_URL)`: SSH ProxyJump URL used with `ssh ProxyJump`. Example: `user1@Bastion1,user2@Bastion2`'
-    echo '  * `(TAGS)`: Only run plays and tasks tagged with these values'
-    echo '  * `(SKIP_TAGS)`: Only run plays and tasks whose tags do not match these values'
     echo '  * `(EXTRA_ANSIBLE_VARS)`: [DEPRECATED] Ansible extra-vars, set additional variables, json dict format.'
     echo '  * `(ANSIBLE_EXTRA_VARS)`: Ansible extra-vars, set additional variables, json dict format.'
     echo '  * `(EXTRA_ANSIBLE_ARGS)`: [DEPRECATED] Additional ansible arguments'
     echo '  * `(ANSIBLE_EXTRA_ARGS)`: Additional ansible arguments'
     echo '  * `(ANSIBLE_REMOTE_USER)`: Ansible remote user. Default: `admin`.'
-    echo '  * `(ANSIBLE_LIMIT_HOSTS)`: select a subset of the inventory'
-    echo '  * `(ANSIBLE_GALAXY_EXTRA_ARGS)`: Additional ansible-galaxy arguments'
-    echo '  * `(ANSIBLE_VAULT_PASSWORD)`: Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files'
-    echo '  * `(ANSIBLE_FORCE_GALAXY)`: Force to run Ansible galaxy to updated eventual cached ansible roles. Default: `false`.'
-    echo '  * `(ANSIBLE_PLAYBOOK_NAME)`: Name of the ansible playbook to run. Default: `site.yml`.'
-    echo '  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.'
     echo '  * `(DEBUG)`: Run in debug mode'
     echo ''
-    echo 'ec2 vars:'
+    echo 'ec2.py vars:'
     echo '  * `(AWS_INVENTORY)`: If the Amazon EC2 dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AWS_ACCESS_KEY_ID` is set or not. Default: `auto`.'
     echo '  * `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory'
     echo '  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory'
     echo '  * `(EC2_VPC_DESTINATION_VARIABLE)`: Can be either `ip_address` for public ip address or `private_ip_address`, see [ec2.ini](https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini). Default: `private_ip_address`.'
     echo ''
-    echo 'azure_rm vars:'
+    echo 'azure_rm.py vars:'
     echo '  * `(AZURE_INVENTORY)`: If the Azure dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AZURE_SUBSCRIPTION_ID` is set or not. Default: `auto`.'
     echo '  * `(AZURE_SUBSCRIPTION_ID)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_TENANT_ID)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_SECRET)`: Used by Azure dynamic inventory'
     echo '  * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.'
-    echo '  * `(ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES)`: By default this plugin will use globally unique host names. This option allows you to override that, and use the name that matches the old inventory script naming.. Default: `False`.'
-    echo '  note: Ansible `azure_rm` plugin is used for ansible `>= 2.8` else `azure_rm.py` script will be used'
     echo ''
     exit 1
 }
@@ -52,32 +46,15 @@ if [ -n "$1" ]; then usage; fi
 
 source ansible-common.sh
 
-#
-# Set defaults
-#
-export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
-export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
-export ANSIBLE_FORCE_GALAXY="${ANSIBLE_FORCE_GALAXY:-false}"
-export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
-
-if [ "${ANSIBLE_FORCE_GALAXY,,}" == "true" ]; then
-  ANSIBLE_GALAXY_EXTRA_ARGS="${ANSIBLE_GALAXY_EXTRA_ARGS} --force"
-fi
+# default
+export ANSIBLE_MODULE=${ANSIBLE_MODULE:-shell}
+export ANSIBLE_TARGET_PATTERN=${ANSIBLE_TARGET_PATTERN:-all}
 
 
-# Vault password
-echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
-#export DEFAULT_VAULT_PASSWORD_FILE="$ANSIBLE_PLAYBOOK_PATH/.vault-password"
 
-cd $ANSIBLE_PLAYBOOK_PATH
-
-if [ -f "requirements.yml" ]; then
-    ansible-galaxy install -r requirements.yml --roles-path=roles -v ${ANSIBLE_GALAXY_EXTRA_ARGS}
-fi
-
-echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
+echo "######################## Running ansible cli"
 
 ansible --version
-ansible-playbook -u ${ANSIBLE_REMOTE_USER} --vault-password-file=.vault-password ${ANSIBLE_PLAYBOOK_NAME} -e cycloid_workdir=${CYCLOID_WORKDIR} --diff ${ANSIBLE_EXTRA_ARGS}
+ansible -e cycloid_workdir=${CYCLOID_WORKDIR} ${ANSIBLE_TARGET_PATTERN} -u ${ANSIBLE_REMOTE_USER} -m ${ANSIBLE_MODULE} ${ANSIBLE_EXTRA_ARGS}
 
 exit $?

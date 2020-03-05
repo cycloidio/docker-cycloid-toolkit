@@ -491,6 +491,78 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEquals(r.exit_code, 0)
 
+class AnsibleCliTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        environment={
+            'SSH_PRIVATE_KEY': '''-----BEGIN RSA PRIVATE KEY-----
+MIICWgIBAAKBgQC6W6OIBOiewkaKBz73bQkv0dqfiUEOrNI0+zWEc3SaaLhz8k1k
+Nug+K+0nEh4GbP82wx+1bLd+KeJUg4EX4kmgHY8Yg8aLkcbSC6kMMqfrRsN2HG4W
+DqRrBvWiTTbEZQB+K6fOhmOFLcI+jkYAgBiPx4YjLIZsV+6+WyG9/ODPiwIDAQAB
+An9GnHJaF4IMpZAUvKofFjFk7R7pVBhSdyku6gBdL2H/H67EQAsS7bsR05MIOtUl
+micZmNVq6MaeB0C6xRkk85jxbJvx4kuBkXVuckFLx2Bij7a+tJavlprkfEOw2hja
+EP27ChGnX3HuCGuQ6NqBXooNBYT0c34z4Io3sREHAzuxAkEA4xslTeLV+JXYzbqW
+C+sZmN7PJg1XBuNJIiYFSx7uFBEW4jLD7n8lbm0SmHd1EGVlaMNahHPqAHB/OQod
+a/cFAwJBANIRU479ElSqYGuf92Gp6ZiE1Vxs6MpJGbzPJfAtu343MmxLn9w/8kel
+Z8p4/vjRugtxCBMYs4JmPoWhmxQvMNkCQEnU92m8xwdL3/HyKPmy8t1qAjpCt/o7
+RfleFvZ3FbtcWu4qxtvwZgDiYNtEasBr1m4apIDPFlISQKoQicQhyHUCQGiUjafr
+H9wcskICcpMhlxUCVIJeCgrjF7gi3L1U1zn/2s+FWsG46DJ5C1IGqNFRADFABYgU
+TRIHOusmSGFlGQkCQQC4mLnzDbfgBGAkB6HsGTvdsxElQ+s+h9RlHlg/PxdiKBVI
+j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
+-----END RSA PRIVATE KEY-----''',
+            'ANSIBLE_FORCE_COLOR': 'false',
+            'ANSIBLE_NOCOLOR': 'true',
+        }
+        self.container = self.docker.containers.run(
+            image=self.docker_image,
+            command='sleep 3600',
+            name=self.__class__.__name__,
+            auto_remove=True,
+            remove=True,
+            detach=True,
+            working_dir='/opt',
+            volumes={osjoin(os.getcwd(), '%s/ansible-cli' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
+            environment=environment,
+        )
+        r = self.drun(cmd="python -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
+        self.python_version = r.output.decode('utf-8').rstrip()
+
+        r = self.drun(cmd="python -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
+        self.ansible_version = r.output.decode('utf-8').rstrip()
+
+    def test_ansible_cli_with_no_command(self):
+        environment={
+            'ANSIBLE_MODULE': 'ping',
+            'ANSIBLE_TARGET_PATTERN': '127.0.0.1',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*-m ping'))
+        self.assertEquals(r.exit_code, 0)
+
+    def test_ansible_cli_with_command(self):
+        environment={
+            'ANSIBLE_MODULE': 'shell',
+            'ANSIBLE_TARGET_PATTERN': '127.0.0.1',
+            'ANSIBLE_MODULE_ARGS': 'ping -c 3 127.0.0.1'
+        }
+        r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*3 packets transmitted'))
+        self.assertEquals(r.exit_code, 0)
+
+    def test_ansible_cli_with_aws_azure_inventory(self):
+        environment={
+            'ANSIBLE_MODULE': 'shell',
+            'ANSIBLE_TARGET_PATTERN': '127.0.0.1',
+            'ANSIBLE_MODULE_ARGS': 'ping -c 3 127.0.0.1',
+            'AZURE_SUBSCRIPTION_ID': 'foo',
+            'AWS_ACCESS_KEY_ID': 'bar',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
+        if float(self.ansible_version) >= 2.8:
+            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/default.azure_rm.yml'), msg=r.output)
+        else:
+            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
 
 if __name__ == '__main__':
     unittest.main()
