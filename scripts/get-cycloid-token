@@ -20,6 +20,7 @@ import logging as log
 import json
 import requests
 import os
+from distutils.util import strtobool
 
 VERSION = '1.0'
 
@@ -54,6 +55,13 @@ PARSER.add_argument("-o", "--organization",
                     action=EnvDefault,
                     envvar='ORGANIZATION',
                     help='Organization name')
+PARSER.add_argument("-k", "--insecure",
+                    required=False,
+                    type=strtobool,
+                    default="False",
+                    action=EnvDefault,
+                    envvar='INSECURE',
+                    help='Run request without SSL check (not recommended in prod)')
 PARSER.add_argument("-a", "--api-url",
                     type=str,
                     help='Cycloid api url name',
@@ -65,16 +73,21 @@ PARSER.add_argument("--version", action='store_true',
 ARGS = PARSER.parse_args()
 
 
-def login(apilogin, api_password, api_url, organization):
+def login(apilogin, api_password, api_url, organization, insecure):
     payload = {'email': apilogin, 'password': api_password}
     headers = {'content-type': 'application/vnd.cycloid.io.v1+json'}
+
+    verify=True
+    if insecure:
+        verify=False
+
     try:
         # Get user token
-        r = requests.post('%s/user/login' % (api_url), data=json.dumps(payload), headers=headers)
+        r = requests.post('%s/user/login' % (api_url), data=json.dumps(payload), headers=headers, verify=verify)
         user_token = r.json().get('data').get('token')
         # Get org token
         headers['Authorization'] = 'Bearer %s' % user_token
-        r = requests.get('%s/user/refresh_token?organization_canonical=%s' % (api_url, organization), headers=headers)
+        r = requests.get('%s/user/refresh_token?organization_canonical=%s' % (api_url, organization), headers=headers, verify=verify)
         return r.json().get('data').get('token')
     except:
         log.error("There is an error on login, please check your configuration - %s" % r.text)
@@ -82,10 +95,9 @@ def login(apilogin, api_password, api_url, organization):
 
 
 if __name__ == "__main__":
-
     if ARGS.version:
         print("version: %s" % VERSION)
         sys.exit(0)
 
-    token = login(ARGS.username, ARGS.password, ARGS.api_url, ARGS.organization)
+    token = login(ARGS.username, ARGS.password, ARGS.api_url, ARGS.organization, ARGS.insecure)
     print(token)
