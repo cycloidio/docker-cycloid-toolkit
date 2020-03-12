@@ -22,6 +22,10 @@ import requests
 import os
 from distutils.util import strtobool
 
+# Remove warning message when using insecure SSL
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 VERSION = '1.0'
 
 # Override arg parser to also take env vars eg :
@@ -80,7 +84,7 @@ def login(apilogin, api_password, api_url, organization, insecure):
     verify=True
     if insecure:
         verify=False
-
+    r = None
     try:
         # Get user token
         r = requests.post('%s/user/login' % (api_url), data=json.dumps(payload), headers=headers, verify=verify)
@@ -89,8 +93,12 @@ def login(apilogin, api_password, api_url, organization, insecure):
         headers['Authorization'] = 'Bearer %s' % user_token
         r = requests.get('%s/user/refresh_token?organization_canonical=%s' % (api_url, organization), headers=headers, verify=verify)
         return r.json().get('data').get('token')
-    except:
-        log.error("There is an error on login, please check your configuration - %s" % r.text)
+    except Exception as e:
+        if r is not None:
+            err = r.text
+        else:
+            err = e
+        log.error("There is an error on login, please check your configuration - %s" % err)
         exit(1)
 
 
