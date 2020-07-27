@@ -35,6 +35,7 @@ RUN ln -s /lib /lib64 \
             gettext \
             findutils \
             bc \
+            tzdata \
     && \
         if [ ${PYTHON_VERSION} -eq 2 ]; then apk add --no-cache py-pip; fi \
     && \
