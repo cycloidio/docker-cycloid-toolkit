@@ -96,4 +96,3 @@ RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
-
