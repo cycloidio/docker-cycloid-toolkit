@@ -564,5 +564,26 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         else:
             self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
 
+class CycloidCliTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.container = self.docker.containers.run(image=self.docker_image,
+                                   command='sleep 3600',
+                                   name=self.__class__.__name__,
+                                   auto_remove=True,
+                                   remove=True,
+                                   detach=True,
+                                   working_dir='/opt',
+                                  )
+
+
+    def test_required_args(self):
+        environment={
+        }
+        r = self.drun(cmd="/usr/bin/cy --version", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*cy version.*revision'))
+        self.assertEquals(r.exit_code, 0)
+
 if __name__ == '__main__':
     unittest.main()
