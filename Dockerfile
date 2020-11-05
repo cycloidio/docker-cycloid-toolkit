@@ -1,5 +1,5 @@
 # Pull base image
-FROM alpine:3.6
+FROM alpine:3.10
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
