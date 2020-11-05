@@ -262,10 +262,10 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                                    volumes={osjoin(os.getcwd(), '%s/ansible-runner' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
                                    environment=environment,
                                   )
-        r = self.drun(cmd="python -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
         self.python_version = r.output.decode('utf-8').rstrip()
 
-        r = self.drun(cmd="python -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
         self.ansible_version = r.output.decode('utf-8').rstrip()
 
     def test_ansible_galaxy(self):
@@ -525,10 +525,10 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             volumes={osjoin(os.getcwd(), '%s/ansible-cli' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
             environment=environment,
         )
-        r = self.drun(cmd="python -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
         self.python_version = r.output.decode('utf-8').rstrip()
 
-        r = self.drun(cmd="python -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
         self.ansible_version = r.output.decode('utf-8').rstrip()
 
     def test_ansible_cli_with_no_command(self):
