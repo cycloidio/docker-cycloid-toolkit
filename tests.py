@@ -262,10 +262,10 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                                    volumes={osjoin(os.getcwd(), '%s/ansible-runner' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
                                    environment=environment,
                                   )
-        r = self.drun(cmd="python -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
         self.python_version = r.output.decode('utf-8').rstrip()
 
-        r = self.drun(cmd="python -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
         self.ansible_version = r.output.decode('utf-8').rstrip()
 
     def test_ansible_galaxy(self):
@@ -525,10 +525,10 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             volumes={osjoin(os.getcwd(), '%s/ansible-cli' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
             environment=environment,
         )
-        r = self.drun(cmd="python -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"import sys; print('%s.%s' % (sys.version_info.major, sys.version_info.minor))\"")
         self.python_version = r.output.decode('utf-8').rstrip()
 
-        r = self.drun(cmd="python -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
+        r = self.drun(cmd="python -W ignore::Warning -c \"from ansible.cli import CLI; print('%d.%d' % (CLI.version_info().get('major'), CLI.version_info().get('minor')))\"")
         self.ansible_version = r.output.decode('utf-8').rstrip()
 
     def test_ansible_cli_with_no_command(self):
@@ -563,6 +563,27 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/default.azure_rm.yml'), msg=r.output)
         else:
             self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
+
+class CycloidCliTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        self.container = self.docker.containers.run(image=self.docker_image,
+                                   command='sleep 3600',
+                                   name=self.__class__.__name__,
+                                   auto_remove=True,
+                                   remove=True,
+                                   detach=True,
+                                   working_dir='/opt',
+                                  )
+
+
+    def test_required_args(self):
+        environment={
+        }
+        r = self.drun(cmd="/usr/bin/cy --version", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*cy version.*revision'))
+        self.assertEquals(r.exit_code, 0)
 
 if __name__ == '__main__':
     unittest.main()
