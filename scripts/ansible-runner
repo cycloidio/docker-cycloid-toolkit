@@ -22,7 +22,7 @@ usage()
     echo '  * `(EXTRA_ANSIBLE_ARGS)`: [DEPRECATED] Additional ansible arguments'
     echo '  * `(ANSIBLE_EXTRA_ARGS)`: Additional ansible arguments'
     echo '  * `(ANSIBLE_REMOTE_USER)`: Ansible remote user. Default: `admin`.'
-    echo '  * `(ANSIBLE_LIMIT_HOSTS)`: select a subset of the inventory'
+    echo '  * `(ANSIBLE_LIMIT_HOSTS)`: Select a subset of the inventory'
     echo '  * `(ANSIBLE_GALAXY_EXTRA_ARGS)`: Additional ansible-galaxy arguments'
     echo '  * `(ANSIBLE_VAULT_PASSWORD)`: Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files'
     echo '  * `(ANSIBLE_FORCE_GALAXY)`: Force to run Ansible galaxy to updated eventual cached ansible roles. Default: `false`.'
