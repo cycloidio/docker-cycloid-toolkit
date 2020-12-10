@@ -1,5 +1,5 @@
 # Pull base image
-FROM alpine:3.10
+FROM alpine:3.12
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
@@ -37,10 +37,9 @@ RUN ln -s /lib /lib64 \
             bc \
             tzdata \
             wget \
+            py-pip \
     && \
         update-ca-certificates \
-    && \
-        if [ ${PYTHON_VERSION} -eq 2 ]; then apk add --no-cache py-pip; fi \
     && \
         apk --upgrade add --no-cache --virtual \
             build-dependencies \
@@ -96,4 +95,3 @@ RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
-

@@ -486,9 +486,9 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         if float(self.ansible_version) >= 2.8:
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml.*-i /etc/ansible/hosts/ec2.py'))
         else:
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py.*-i /etc/ansible/hosts/ec2.py'))
         self.assertEquals(r.exit_code, 0)
 
 class AnsibleCliTestCase(TestCase):
@@ -560,9 +560,9 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
         if float(self.ansible_version) >= 2.8:
-            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/default.azure_rm.yml'), msg=r.output)
+            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/default.azure_rm.yml.*-i /etc/ansible/hosts/ec2.py'), msg=r.output)
         else:
-            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/ec2.py.*-i /etc/ansible/hosts/azure_rm.py'))
+            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/azure_rm.py.*-i /etc/ansible/hosts/ec2.py'))
 
 class CycloidCliTestCase(TestCase):
 
