@@ -64,6 +64,11 @@ if [ "${ANSIBLE_FORCE_GALAXY,,}" == "true" ]; then
   ANSIBLE_GALAXY_EXTRA_ARGS="${ANSIBLE_GALAXY_EXTRA_ARGS} --force"
 fi
 
+# Check if playbook path exists
+if [ ! -d "$ANSIBLE_PLAYBOOK_PATH" ]; then
+    echo "Ansible playbook directory does not exists, please verify your parameters. (ANSIBLE_PLAYBOOK_PATH: $ANSIBLE_PLAYBOOK_PATH)"
+    exit 1
+fi
 
 # Vault password
 echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
