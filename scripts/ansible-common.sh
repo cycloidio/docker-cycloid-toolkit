@@ -43,7 +43,8 @@ export ANSIBLE_EXTRA_VARS="${ANSIBLE_EXTRA_VARS:-$EXTRA_ANSIBLE_VARS}"
 # Construct vars
 #
 if [ -n "$ANSIBLE_EXTRA_VARS" ]; then
-  echo $ANSIBLE_EXTRA_VARS | jq -M . > /tmp/extra_ansible_args.json
+  # This will read the whole file in a loop, then replaces the newline(s) with a \\n.
+  echo "$ANSIBLE_EXTRA_VARS" | sed ':a;N;$!ba;s/\n/\\n/g' | jq -M . > /tmp/extra_ansible_args.json
   ANSIBLE_EXTRA_ARGS=" -e @/tmp/extra_ansible_args.json ${ANSIBLE_EXTRA_ARGS}"
 fi
 if [ -n "$TAGS" ]; then

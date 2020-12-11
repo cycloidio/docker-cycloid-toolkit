@@ -3,5 +3,5 @@ boto
 boto3
 pyOpenSSL
 openshift
-azure-mgmt-resource
 azure-mgmt-compute
+azure-mgmt-resource
