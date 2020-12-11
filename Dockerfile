@@ -1,5 +1,5 @@
 # Pull base image
-FROM alpine:3.6
+FROM alpine:3.12
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
@@ -35,8 +35,11 @@ RUN ln -s /lib /lib64 \
             gettext \
             findutils \
             bc \
+            tzdata \
+            wget \
+            py-pip \
     && \
-        if [ ${PYTHON_VERSION} -eq 2 ]; then apk add --no-cache py-pip; fi \
+        update-ca-certificates \
     && \
         apk --upgrade add --no-cache --virtual \
             build-dependencies \
@@ -85,7 +88,10 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
     && pip${PYTHON_VERSION} install --no-cache-dir --upgrade boto \
     && cp /etc/endpoints_new.json $(python${PYTHON_VERSION} -c "import boto; print('%s/endpoints.json' % boto.__path__[0])")
 
+# Install Cycloid wrapper
+RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/cy-wrapper.sh > /usr/bin/cy \
+    && chmod +x /usr/bin/cy
+
 # Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
-

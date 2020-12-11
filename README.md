@@ -20,12 +20,16 @@ This script use env vars configuration to run ansible playbook with ssh proxy on
   * `(EXTRA_ANSIBLE_ARGS)`: Additional ansible-playbook arguments
   * `(EXTRA_ANSIBLE_VARS)`: Ansible extra-vars, set additional variables, json dict format.
   * `(ANSIBLE_REMOTE_USER)`: Ansible remote user. Default: `admin`.
+  * `(ANSIBLE_LIMIT_HOSTS)`: Select a subset of the inventory
   * `(ANSIBLE_GALAXY_EXTRA_ARGS)`: Additional ansible-galaxy arguments
   * `(ANSIBLE_VAULT_PASSWORD)`: Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files
   * `(ANSIBLE_FORCE_GALAXY)`: Force to run Ansible galaxy to updated eventual cached ansible roles. Default: `false`.
   * `(ANSIBLE_PLAYBOOK_NAME)`: Name of the ansible playbook to run. Default: `site.yml`.
   * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.
   * `(DEBUG)`: Run in debug mode
+
+ansible-common:
+  * `(ANSIBLE_STDOUT_CALLBACK)`: Callback plugin used for ansible output. Example: `default` can be used to see debug messages. Default: `actionable`.
 
 ec2 vars:
   * `(AWS_INVENTORY)`: If the Amazon EC2 dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AWS_ACCESS_KEY_ID` is set or not. Default: `auto`.

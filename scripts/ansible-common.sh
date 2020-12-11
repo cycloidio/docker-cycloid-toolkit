@@ -43,20 +43,21 @@ export ANSIBLE_EXTRA_VARS="${ANSIBLE_EXTRA_VARS:-$EXTRA_ANSIBLE_VARS}"
 # Construct vars
 #
 if [ -n "$ANSIBLE_EXTRA_VARS" ]; then
-  echo $ANSIBLE_EXTRA_VARS | jq -M . > /tmp/extra_ansible_args.json
-  ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS} -e @/tmp/extra_ansible_args.json"
+  # This will read the whole file in a loop, then replaces the newline(s) with a \\n.
+  echo "$ANSIBLE_EXTRA_VARS" | sed ':a;N;$!ba;s/\n/\\n/g' | jq -M . > /tmp/extra_ansible_args.json
+  ANSIBLE_EXTRA_ARGS=" -e @/tmp/extra_ansible_args.json ${ANSIBLE_EXTRA_ARGS}"
 fi
 if [ -n "$TAGS" ]; then
-  ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS} --tags $(echo $TAGS | jq -r '. | join(",")')"
+  ANSIBLE_EXTRA_ARGS=" --tags $(echo $TAGS | jq -r '. | join(",")') ${ANSIBLE_EXTRA_ARGS}"
 fi
 if [ -n "$SKIP_TAGS" ]; then
-  ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS} --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")')"
+  ANSIBLE_EXTRA_ARGS=" --skip-tags $(echo $SKIP_TAGS | jq -r '. | join(",")') ${ANSIBLE_EXTRA_ARGS}"
 fi
 if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "${AWS_INVENTORY,,}" == "true" ]; then
   # Render ec2.ini template from envvars
   envsubst < /etc/ansible/hosts-template/ec2.ini.template > /etc/ansible/hosts/ec2.ini
   cp /etc/ansible/hosts-template/ec2.py /etc/ansible/hosts/
-  ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS} -i /etc/ansible/hosts/ec2.py"
+  ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/ec2.py ${ANSIBLE_EXTRA_ARGS}"
 fi
 
 if [ -z "${ANSIBLE_PLUGIN_AZURE_HOST}" ]; then
@@ -70,10 +71,10 @@ if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${A
   if (( $(echo "${ANSIBLE_VERSION%.*} >= 2.8" |bc -l) )); then
     # Render default.azure_rm.yml template from envvars
     envsubst < /etc/ansible/hosts-template/default.azure_rm.yml.template > /etc/ansible/hosts/default.azure_rm.yml
-    ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS} -i /etc/ansible/hosts/default.azure_rm.yml"
+    ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/default.azure_rm.yml ${ANSIBLE_EXTRA_ARGS}"
   else
     cp /etc/ansible/hosts-template/azure_rm.py /etc/ansible/hosts/
-    ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS} -i /etc/ansible/hosts/azure_rm.py"
+    ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/azure_rm.py ${ANSIBLE_EXTRA_ARGS}"
   fi
 fi
 
@@ -115,6 +116,5 @@ elif [ -n "$BASTION_URL" ]; then
 fi
 
 if [ -n "${ANSIBLE_LIMIT_HOSTS}" ]; then
-	export ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS} --limit ${ANSIBLE_LIMIT_HOSTS}"
+	export ANSIBLE_EXTRA_ARGS=" --limit ${ANSIBLE_LIMIT_HOSTS} ${ANSIBLE_EXTRA_ARGS}"
 fi
-
