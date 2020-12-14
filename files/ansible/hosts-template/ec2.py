@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-# Copyright: (c) 2012, Peter Sankauskas
-
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
-__metaclass__ = type
 
 '''
 EC2 external inventory script
@@ -140,6 +135,25 @@ These settings would produce a destination_format as the following:
 'webserver-ansible-blue-172.31.0.1'
 '''
 
+# (c) 2012, Peter Sankauskas
+#
+# This file is part of Ansible,
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+######################################################################
+
 import sys
 import os
 import argparse
@@ -155,7 +169,7 @@ from boto import route53
 from boto import sts
 
 from ansible.module_utils import six
-from ansible_collections.amazon.aws.plugins.module_utils import ec2 as ec2_utils
+from ansible.module_utils import ec2 as ec2_utils
 from ansible.module_utils.six.moves import configparser
 
 HAS_BOTO3 = False
