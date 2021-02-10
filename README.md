@@ -263,7 +263,7 @@ shared:
 ```bash
 export IMAGE_NAME="cycloid/cycloid-toolkit:develop"
 export PYTHON_VERSION=3
-export ANSIBLE_VERSION=2.8.*
+export ANSIBLE_VERSION=2.9.*
 docker build -t $IMAGE_NAME --build-arg=PYTHON_VERSION="$PYTHON_VERSION" --build-arg=ANSIBLE_VERSION="$ANSIBLE_VERSION" .
 
 virtualenv -p python3 --clear .env
@@ -280,6 +280,6 @@ Tags are currently based on ansible version installed in the docker image.
 > **If you update ansible version, push a new image tag**
 
 ```
-sudo docker build . -t cycloid/cycloid-toolkit:v2.4
-sudo docker push cycloid/cycloid-toolkit:v2.4
+sudo docker build . -t cycloid/cycloid-toolkit:v2.9
+sudo docker push cycloid/cycloid-toolkit:v2.9
 ```

@@ -3,7 +3,7 @@ FROM alpine:3.12
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
-ARG PYTHON_VERSION=2
+ARG PYTHON_VERSION=3
 ARG ANSIBLE_VERSION=2.*
 
 ADD requirements.txt /opt/
