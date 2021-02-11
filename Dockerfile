@@ -1,5 +1,5 @@
 # Pull base image
-FROM alpine:3.12
+FROM alpine:3.13
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
@@ -24,7 +24,7 @@ RUN ln -s /lib /lib64 \
             ipcalc \
             libc6-compat \
             libxml2 \
-            py-lxml \
+            py${PYTHON_VERSION}-lxml \
             pwgen \
             python${PYTHON_VERSION} \
             openssl \
@@ -44,6 +44,7 @@ RUN ln -s /lib /lib64 \
         apk --upgrade add --no-cache --virtual \
             build-dependencies \
             build-base \
+            cargo \
             python${PYTHON_VERSION}-dev \
             libffi-dev \
             openssl-dev \
@@ -60,6 +61,7 @@ RUN ln -s /lib /lib64 \
         apk del \
             build-dependencies \
             build-base \
+            cargo \
             python${PYTHON_VERSION}-dev \
             libffi-dev \
             openssl-dev \
