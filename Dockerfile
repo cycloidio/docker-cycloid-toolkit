@@ -1,9 +1,9 @@
 # Pull base image
-FROM alpine:3.12
+FROM alpine:3.13
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
-ARG PYTHON_VERSION=2
+ARG PYTHON_VERSION=3
 ARG ANSIBLE_VERSION=2.*
 
 ADD requirements.txt /opt/
@@ -24,7 +24,7 @@ RUN ln -s /lib /lib64 \
             ipcalc \
             libc6-compat \
             libxml2 \
-            py-lxml \
+            py${PYTHON_VERSION}-lxml \
             pwgen \
             python${PYTHON_VERSION} \
             openssl \
@@ -44,6 +44,7 @@ RUN ln -s /lib /lib64 \
         apk --upgrade add --no-cache --virtual \
             build-dependencies \
             build-base \
+            cargo \
             python${PYTHON_VERSION}-dev \
             libffi-dev \
             openssl-dev \
@@ -60,6 +61,7 @@ RUN ln -s /lib /lib64 \
         apk del \
             build-dependencies \
             build-base \
+            cargo \
             python${PYTHON_VERSION}-dev \
             libffi-dev \
             openssl-dev \
@@ -92,6 +94,6 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
 RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/cy-wrapper.sh > /usr/bin/cy \
     && chmod +x /usr/bin/cy
 
-# Contain ec2.py dynamic inventory from https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
+# Contain ec2.py dynamic inventory from https://github.com/ansible-collections/community.aws/tree/main/scripts/inventory or https://github.com/ansible/ansible/blob/stable-2.9/contrib/inventory/ec2.py
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
