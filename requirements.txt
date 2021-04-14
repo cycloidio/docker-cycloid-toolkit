@@ -5,3 +5,4 @@ pyOpenSSL
 openshift
 azure-mgmt-compute
 azure-mgmt-resource
+msrestazure
