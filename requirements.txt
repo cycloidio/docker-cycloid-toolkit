@@ -6,3 +6,5 @@ openshift
 azure-mgmt-compute
 azure-mgmt-resource
 msrestazure
+pykerberos
+pywinrm

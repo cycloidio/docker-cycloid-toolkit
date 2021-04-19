@@ -38,6 +38,7 @@ RUN ln -s /lib /lib64 \
             tzdata \
             wget \
             py-pip \
+            krb5 \
     && \
         update-ca-certificates \
     && \
@@ -50,6 +51,8 @@ RUN ln -s /lib /lib64 \
             openssl-dev \
             linux-headers \
             libxml2-dev \
+            musl-dev \
+            krb5-dev \
     && \
         pip${PYTHON_VERSION} install pip --upgrade && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
@@ -67,6 +70,8 @@ RUN ln -s /lib /lib64 \
             openssl-dev \
             linux-headers \
             libxml2-dev \
+            krb5-dev \
+            musl-dev \
     && \
         rm -rf /var/cache/apk/*
 
