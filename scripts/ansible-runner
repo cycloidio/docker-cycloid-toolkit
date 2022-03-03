@@ -50,7 +50,7 @@ usage()
 }
 if [ -n "$1" ]; then usage; fi
 
-source ansible-common.sh
+source /usr/bin/ansible-common.sh
 
 #
 # Set defaults
