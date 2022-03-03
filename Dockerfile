@@ -1,5 +1,5 @@
 # Pull base image
-FROM alpine:3.13
+FROM alpine:3.15
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
@@ -56,8 +56,7 @@ RUN ln -s /lib /lib64 \
     && \
         pip${PYTHON_VERSION} install pip --upgrade && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
-        # avoid Jinja 2.11 until https://github.com/pallets/jinja/issues/1138
-        pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} Jinja2==2.8 \
+        pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} \
     && \
         ln -s $(which python${PYTHON_VERSION}) /bin/python \
     && \
