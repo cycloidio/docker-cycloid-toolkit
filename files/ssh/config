@@ -1,3 +1,6 @@
 Host *
    StrictHostKeyChecking no
    UserKnownHostsFile=/dev/null
+   # ssh-rsa has been removed in ssh version 8.7 and replaced by a new algorithm (which is not present on ssh server version ~7.5)
+   # Adding back the support of deprecated ssh-rsa for legacy servers https://www.openssh.com/txt/release-8.7
+   PubkeyAcceptedKeyTypes +ssh-rsa
