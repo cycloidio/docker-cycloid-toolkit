@@ -39,6 +39,7 @@ RUN ln -s /lib /lib64 \
             wget \
             py-pip \
             krb5 \
+            google-authenticator \
     && \
         update-ca-certificates \
     && \

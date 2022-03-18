@@ -8,3 +8,4 @@ azure-mgmt-resource
 msrestazure
 pykerberos
 pywinrm
+requests

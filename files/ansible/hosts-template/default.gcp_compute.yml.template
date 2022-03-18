@@ -1,0 +1,23 @@
+plugin: google.cloud.gcp_compute
+
+service_account_contents: $GCP_SERVICE_ACCOUNT
+auth_kind: serviceaccount
+scopes:
+ - 'https://www.googleapis.com/auth/cloud-platform'
+ - 'https://www.googleapis.com/auth/compute'
+ - 'https://www.googleapis.com/auth/devstorage.read_write'
+
+keyed_groups:
+  # Create groups from GCE labels
+  - prefix: gcp
+    key: labels
+
+hostnames:
+  # List host by name instead of the default public ip
+  - name
+
+compose:
+  # Set an inventory parameter to use the Public IP address to connect to the host
+  # For Private ip use "networkInterfaces[0].networkIP"
+  # For Public ip use "networkInterfaces[0].accessConfigs[0].natIP"
+  ansible_host: $GCP_NETWORK_INTERFACE_IP

@@ -32,6 +32,11 @@ export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
 export ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES="${ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES:-False}"
 export ANSIBLE_PLUGIN_AZURE_HOST="${ANSIBLE_PLUGIN_AZURE_HOST:-""}"
 
+# Default envvars for gcp_compute
+export GCP_INVENTORY="${GCP_INVENTORY:-auto}"
+export GCP_USE_PRIVATE_IP="${GCP_USE_PRIVATE_IP:-True}"
+export GCP_NETWORK_INTERFACE_IP="${GCP_NETWORK_INTERFACE_IP:-"networkInterfaces[0].networkIP"}"
+
 # Keep compatibility with old namings
 export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
 export EXTRA_ANSIBLE_VARS="${EXTRA_ANSIBLE_VARS:-$EXTRA_VARS}"
@@ -76,6 +81,17 @@ if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${A
     cp /etc/ansible/hosts-template/azure_rm.py /etc/ansible/hosts/
     ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/azure_rm.py ${ANSIBLE_EXTRA_ARGS}"
   fi
+fi
+
+if [ "$GCP_INVENTORY" == "auto" ] && [ -n "$GCP_SERVICE_ACCOUNT" ] || [ "${GCP_INVENTORY,,}" == "true" ]; then
+  if [ "${GCP_USE_PRIVATE_IP,,}" == "true" ]; then
+      export GCP_NETWORK_INTERFACE_IP="networkInterfaces[0].networkIP"
+  else
+      export GCP_NETWORK_INTERFACE_IP="networkInterfaces[0].accessConfigs[0].natIP"
+  fi
+  # Render default.gcp_compute.yml template from envvars
+  envsubst < /etc/ansible/hosts-template/default.gcp_compute.yml.template > /etc/ansible/hosts/default.gcp_compute.yml
+  ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/default.gcp_compute.yml ${ANSIBLE_EXTRA_ARGS}"
 fi
 
 # Setup SSH access
