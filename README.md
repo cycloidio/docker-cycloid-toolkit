@@ -50,7 +50,6 @@ azure_rm vars:
 gcp_compute vars:
   * `(GCP_INVENTORY)`: If the GCP dynamic inventory needs to be used or not, can be either `true`, `false` or `auto`. `auto` checks if `GCP_SERVICE_ACCOUNT_CONTENTS` is set or not. Default: `auto`.
   * `(GCP_SERVICE_ACCOUNT_CONTENTS)`: Used by GCP dynamic inventory. The GCP Service Account in JSON format.
-  * `(GCP_PROJECT)`: Used by GCP dynamic inventory. Populate inventory with instances in this project.
   * `(GCP_USE_PRIVATE_IP)`: Can be either `True` or `False`. Default: `True`.
 
 Example of pipeline configuration :

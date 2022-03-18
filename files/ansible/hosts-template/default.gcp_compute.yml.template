@@ -13,7 +13,7 @@ service_account_contents: |
 
 keyed_groups:
   # Create groups from GCE labels
-  - prefix: gcp
+  - prefix: tag
     key: labels
 
 hostnames:
