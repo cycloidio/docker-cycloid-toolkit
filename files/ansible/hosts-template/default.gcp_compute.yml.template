@@ -1,6 +1,6 @@
 plugin: google.cloud.gcp_compute
 
-service_account_contents: $GCP_SERVICE_ACCOUNT
+service_account_contents: $GCP_CREDENTIALS_JSON
 auth_kind: serviceaccount
 scopes:
  - 'https://www.googleapis.com/auth/cloud-platform'

@@ -102,3 +102,6 @@ RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/
 # Contain ec2.py dynamic inventory from https://github.com/ansible-collections/community.aws/tree/main/scripts/inventory or https://github.com/ansible/ansible/blob/stable-2.9/contrib/inventory/ec2.py
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
+
+# Install gcp_compute inventory plugin
+RUN ansible-galaxy collection install google.cloud

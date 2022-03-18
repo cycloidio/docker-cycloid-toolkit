@@ -83,7 +83,7 @@ if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${A
   fi
 fi
 
-if [ "$GCP_INVENTORY" == "auto" ] && [ -n "$GCP_SERVICE_ACCOUNT" ] || [ "${GCP_INVENTORY,,}" == "true" ]; then
+if [ "$GCP_INVENTORY" == "auto" ] && [ -n "$GCP_CREDENTIALS_JSON" ] || [ "${GCP_INVENTORY,,}" == "true" ]; then
   if [ "${GCP_USE_PRIVATE_IP,,}" == "true" ]; then
       export GCP_NETWORK_INTERFACE_IP="networkInterfaces[0].networkIP"
   else
