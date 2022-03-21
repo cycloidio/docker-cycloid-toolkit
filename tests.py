@@ -362,7 +362,6 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertEquals(r.exit_code, 0)
 
     def test_ec2_hosts_inventory(self):
-        # default vpc_destination_variable should be private_ip_address
         # EC2 dynamic inventory should not be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
@@ -370,10 +369,22 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 
         # assert that no ec2 inventory will be loaded from /etc/ansible/hosts
         self.assertFalse(os.path.exists("/etc/ansible/hosts/ec2.ini"))
-        # vpc_destination_variable should be ip_address
+        # default vpc_destination_variable should be private_ip_address
         # EC2 dynamic inventory should be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is present
         environment={
             'AWS_ACCESS_KEY_ID': 'foo',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertEquals(r.exit_code, 0)
+
+        r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
+        self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable [^_]+private_ip_address'))
+
+        # EC2 dynamic inventory should be used as AWS_INVENTORY=true even if AWS_ACCESS_KEY_ID is not present
+        # vpc_destination_variable should be ip_address
+        environment={
+            'AWS_INVENTORY': 'true',
             'EC2_VPC_DESTINATION_VARIABLE': 'ip_address',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
@@ -381,15 +392,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertEquals(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
-        self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable .+ip_address'))
-
-        # EC2 dynamic inventory should be used as AWS_INVENTORY=true even if AWS_ACCESS_KEY_ID is not present
-        environment={
-            'AWS_INVENTORY': 'true',
-        }
-        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable [^_]+ip_address'))
 
         # EC2 dynamic inventory should not be used as AWS_INVENTORY=false even if AWS_ACCESS_KEY_ID is present
         environment={
@@ -477,18 +480,67 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
         self.assertEquals(r.exit_code, 0)
 
-    def test_ec2_and_azure_hosts_inventory(self):
+    def test_gcp_hosts_inventory(self):
+        # GCP dynamic inventory should not be used as GCP_INVENTORY default to auto and GCP_SERVICE_ACCOUNT_CONTENTS is not present
+        r = self.drun(cmd="/usr/bin/ansible-runner")
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+        # assert that no GCP inventory will be loaded from /etc/ansible/hosts
+        self.assertFalse(os.path.exists("/etc/ansible/hosts/default.gcp_compute.yml"))
+        # default GCP ansible_host should be to networkInterfaces[0].networkIP because of GCP_USE_PRIVATE_IP
+        # GCP dynamic inventory should be used as GCP_INVENTORY default to auto and GCP_SERVICE_ACCOUNT_CONTENTS is present
+        environment={
+            'GCP_SERVICE_ACCOUNT_CONTENTS': '{"project_id": "myproject"}',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+        r = self.drun(cmd="cat /etc/ansible/hosts/default.gcp_compute.yml")
+        self.assertTrue(self.output_contains(r.output, '.*ansible_host: networkInterfaces\[0\].networkIP'))
+        self.assertTrue(self.output_contains(r.output, '.*- "myproject"'))
+
+        # GCP dynamic inventory should be used as AWS_INVENTORY=true even if GCP_SERVICE_ACCOUNT_CONTENTS is not present
+        # force GCP ansible_host to natIP using GCP_USE_PRIVATE_IP
+        environment={
+            'GCP_SERVICE_ACCOUNT_CONTENTS': 'true',
+            'GCP_USE_PRIVATE_IP': 'false',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+        r = self.drun(cmd="cat /etc/ansible/hosts/default.gcp_compute.yml")
+        self.assertTrue(self.output_contains(r.output, '.*ansible_host: networkInterfaces\[0\].accessConfigs\[0\].natIP'))
+
+        # GCP dynamic inventory should not be used as GCP_INVENTORY=false even if GCP_SERVICE_ACCOUNT_CONTENTS is present
+        environment={
+            'GCP_INVENTORY': 'false',
+            'GCP_SERVICE_ACCOUNT_CONTENTS': 'foo',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+    def test_ec2_azure_gcp_hosts_inventory(self):
         # EC2 dynamic inventory should be used as AWS_INVENTORY defaults to auto and AWS_ACCESS_KEY_ID is present
         # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is present
         environment={
             'AZURE_SUBSCRIPTION_ID': 'foo',
             'AWS_ACCESS_KEY_ID': 'bar',
+            'GCP_SERVICE_ACCOUNT_CONTENTS': 'bli',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        # Azure
         if float(self.ansible_version) >= 2.8:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml.*-i /etc/ansible/hosts/ec2.py'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py.*-i /etc/ansible/hosts/ec2.py'))
+        # AWS
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        # GCP
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
         self.assertEquals(r.exit_code, 0)
 
 class AnsibleCliTestCase(TestCase):
