@@ -47,6 +47,11 @@ azure_rm vars:
   * `(ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES)`: By default this plugin will use globally unique host names. This option allows you to override that, and use the name that matches the old inventory script naming.. Default: `False`.
   note: Ansible `azure_rm` plugin is used for ansible `>= 2.8` else `azure_rm.py` script will be used
 
+gcp_compute vars:
+  * `(GCP_INVENTORY)`: If the GCP dynamic inventory needs to be used or not, can be either `true`, `false` or `auto`. `auto` checks if `GCP_SERVICE_ACCOUNT_CONTENTS` is set or not. Default: `auto`.
+  * `(GCP_SERVICE_ACCOUNT_CONTENTS)`: Used by GCP dynamic inventory. The GCP Service Account in JSON format.
+  * `(GCP_USE_PRIVATE_IP)`: Can be either `True` or `False`. Default: `True`.
+
 Example of pipeline configuration :
 
 **YAML anchors**
