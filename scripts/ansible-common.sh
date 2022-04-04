@@ -37,6 +37,10 @@ export GCP_INVENTORY="${GCP_INVENTORY:-auto}"
 export GCP_USE_PRIVATE_IP="${GCP_USE_PRIVATE_IP:-True}"
 export GCP_NETWORK_INTERFACE_IP="${GCP_NETWORK_INTERFACE_IP:-"networkInterfaces[0].networkIP"}"
 
+# Default envvars for vmware_vm_inventory
+export VMWARE_VM_INVENTORY="${VMWARE_VM_INVENTORY:-auto}"
+export VMWARE_PORT="${VMWARE_PORT:-443}"
+
 # Keep compatibility with old namings
 export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
 export EXTRA_ANSIBLE_VARS="${EXTRA_ANSIBLE_VARS:-$EXTRA_VARS}"
@@ -94,6 +98,12 @@ if [ "$GCP_INVENTORY" == "auto" ] && [ -n "$GCP_SERVICE_ACCOUNT_CONTENTS" ] || [
   # Render default.gcp_compute.yml template from envvars
   envsubst < /etc/ansible/hosts-template/default.gcp_compute.yml.template > /etc/ansible/hosts/default.gcp_compute.yml
   ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/default.gcp_compute.yml ${ANSIBLE_EXTRA_ARGS}"
+fi
+
+if [ "$VMWARE_VM_INVENTORY" == "auto" ] && [ -n "$VMWARE_SERVER" ] || [ "${VMWARE_VM_INVENTORY,,}" == "true" ]; then
+  # Render default.vmware.yml template from envvars
+  envsubst < /etc/ansible/hosts-template/default.vmware.yml.template > /etc/ansible/hosts/default.vmware.yml
+  ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/default.vmware.yml ${ANSIBLE_EXTRA_ARGS}"
 fi
 
 # Setup SSH access
