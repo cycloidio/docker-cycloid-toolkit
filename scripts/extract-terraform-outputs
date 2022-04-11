@@ -5,10 +5,10 @@ usage()
     echo 'You should provide the following env vars :'
     echo ''
     echo "$0"
-    echo '  * `(TERRAFORM_METADATA_FILE)` Default `terraform/metadata`.'
-    echo '  * `(OUTPUT_ANSIBLE_VAR_FILE)` Ansible variables file. Default `output-var/all`. You might expect provide `ansible-playbook/group_vars/all`.'
-    echo '  * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Default `output-var/env`.'
-    echo '  * `(OUTPUT_YAML_VAR_FILE)` YAML variables file. Default `output-var/env.yml`.'
+    echo '  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata`.'
+    echo '  * `(OUTPUT_ANSIBLE_VAR_FILE)` Ansible variables file. Defaults to `output-var/all`. You might want to use `ansible-playbook/group_vars/all`.'
+    echo '  * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Defaults to `output-var/env`.'
+    echo '  * `(OUTPUT_VAR_PATH)` base path used for all *_VAR_FILE. Defaults to `output-var`.'
     echo ''
     exit 1
 }
@@ -17,22 +17,27 @@ if [ -n "$1" ]; then usage; fi
 
 # Set defaults
 export TERRAFORM_METADATA_FILE="${TERRAFORM_METADATA_FILE:-terraform/metadata}"
-export OUTPUT_ANSIBLE_VAR_FILE="${OUTPUT_ANSIBLE_VAR_FILE:-output-var/all}"
-export OUTPUT_ENV_VAR_FILE="${OUTPUT_ENV_VAR_FILE:-output-var/env}"
-export OUTPUT_YAML_VAR_FILE="${OUTPUT_YAML_VAR_FILE:-output-var/env.yml}"
+export OUTPUT_VAR_PATH="${OUTPUT_VAR_PATH:-output-var}"
+export OUTPUT_ANSIBLE_VAR_FILE="${OUTPUT_ANSIBLE_VAR_FILE:-$OUTPUT_VAR_PATH/group_vars/all}"
+export OUTPUT_ENV_VAR_FILE="${OUTPUT_ENV_VAR_FILE:-$OUTPUT_VAR_PATH/env}"
 
 set -e
 
+if ! [ -f "$TERRAFORM_METADATA_FILE" ]; then
+    echo "$0 - ERROR: the Terraform output file '${TERRAFORM_METADATA_FILE}' does not exist."
+    exit 1
+fi
+
 mkdir -p $(dirname $OUTPUT_ANSIBLE_VAR_FILE)
-echo "############ Extracting Terraform output -> $OUTPUT_ANSIBLE_VAR_FILE"
+echo "############ Extracting Terraform outputs as YAML -> $OUTPUT_ANSIBLE_VAR_FILE"
 python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $TERRAFORM_METADATA_FILE | tee -a $OUTPUT_ANSIBLE_VAR_FILE
 
 mkdir -p $(dirname $OUTPUT_ENV_VAR_FILE)
-echo "############ Extracting Terraform output -> $OUTPUT_ENV_VAR_FILE"
-python -c "import sys, yaml, json; print('\n'.join([ '%s=%s' % (k,v) for k, v in json.load(sys.stdin).items()]))" < $TERRAFORM_METADATA_FILE | tee -a $OUTPUT_ENV_VAR_FILE
+echo "############ Extracting Terraform outputs as a shell script -> $OUTPUT_ENV_VAR_FILE"
 
-mkdir -p $(dirname $OUTPUT_YAML_VAR_FILE)
-echo "############ Extracting Terraform output -> $OUTPUT_YAML_VAR_FILE"
-python -c "import sys, yaml, json; print('\n'.join([ '%s: \"%s\"' % (k,v) for k, v in json.load(sys.stdin).items()]))" < $TERRAFORM_METADATA_FILE | tee -a $OUTPUT_YAML_VAR_FILE
-
-exit $?
+IFS=$'\n'
+for s in $(cat $TERRAFORM_METADATA_FILE | jq -r 'to_entries|map("\(.key)=\"\(.value|tostring)\"")|.[]' ); do
+    echo "export $s" | tee -a $OUTPUT_ENV_VAR_FILE
+    export $s
+done
+unset IFS

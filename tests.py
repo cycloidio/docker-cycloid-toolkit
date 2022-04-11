@@ -74,6 +74,46 @@ class TestCase(unittest.TestCase):
             pass
         self.clean_dir()
 
+class ExtractTerraformOutputsTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+        environment={
+            'OUTPUT_VAR_PATH':         '/tmp/merged-stack',
+            'TERRAFORM_METADATA_FILE': 'metadata',
+        }
+        self.container = self.docker.containers.run(image=self.docker_image,
+                                   command='sleep 3600',
+                                   name=self.__class__.__name__,
+                                   auto_remove=True,
+                                   remove=True,
+                                   detach=True,
+                                   working_dir='/opt',
+                                   volumes={osjoin(os.getcwd(), '%s/extract-terraform-outputs' % self.testsdir): {'bind': '/opt', 'mode': 'rw'}},
+                                   environment=environment,
+                                  )
+
+
+    def test_file_exist(self):
+        environment={
+            'TERRAFORM_METADATA_FILE': 'fake-file',
+        }
+        r = self.drun(cmd="/usr/bin/extract-terraform-outputs", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ERROR:.*does not exist'))
+        self.assertEquals(r.exit_code, 1)
+
+    def test_file_exist(self):
+        r = self.drun(cmd="/usr/bin/extract-terraform-outputs")
+        self.assertTrue(self.output_contains(r.output, '.*Extracting Terraform outputs as YAML'))
+        self.assertTrue(self.output_contains(r.output, '.*Extracting Terraform outputs as a shell'))
+        self.assertEquals(r.exit_code, 0)
+
+        ## Check YAML
+        r = self.drun(cmd="cat /tmp/merged-stack/group_vars/all")
+        self.assertTrue(self.output_contains(r.output, '^foo: bar'))
+        ## Check ENV
+        r = self.drun(cmd="cat /tmp/merged-stack/env")
+        self.assertTrue(self.output_contains(r.output, '^export foo="bar with spaces"'))
 
 class MergeStackAndConfigTestCase(TestCase):
 
