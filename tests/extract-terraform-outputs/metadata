@@ -1,0 +1,6 @@
+{
+  "foo": "bar with spaces",
+  "array": ["hello", "world"],
+  "map": { "key1": "value1", "key2": "value2"} ,
+  "int": 42
+}

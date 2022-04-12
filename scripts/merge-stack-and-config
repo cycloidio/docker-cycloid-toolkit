@@ -75,8 +75,7 @@ fi
 # In case of ansible run, we might have provided terraform output metadata file.
 # Lookup if we are in this case. And generate those vars for ansible.
 if [ -f "$TERRAFORM_METADATA_FILE" ]; then
-  echo "############ Extracting Terraform output -> group_vars/all extract-terraform-outputs"
-  OUTPUT_ANSIBLE_VAR_FILE=${MERGE_OUTPUT_PATH}/group_vars/all extract-terraform-outputs
+  OUTPUT_VAR_PATH=${MERGE_OUTPUT_PATH} extract-terraform-outputs
 fi
 
 
