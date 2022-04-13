@@ -114,6 +114,8 @@ class ExtractTerraformOutputsTestCase(TestCase):
         ## Check ENV
         r = self.drun(cmd="cat /tmp/merged-stack/env")
         self.assertTrue(self.output_contains(r.output, '^export foo="bar with spaces"'))
+        self.assertTrue(self.output_contains(r.output, '^export special_test=".*'))
+        self.assertTrue(self.output_contains(r.output, '^export special_Test2=".*'))
 
 class MergeStackAndConfigTestCase(TestCase):
 
