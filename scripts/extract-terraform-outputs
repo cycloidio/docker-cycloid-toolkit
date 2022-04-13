@@ -7,7 +7,7 @@ usage()
     echo "$0"
     echo '  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata`.'
     echo '  * `(OUTPUT_ANSIBLE_VAR_FILE)` Ansible variables file. Defaults to `output-var/all`. You might want to use `ansible-playbook/group_vars/all`.'
-    echo '  * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Defaults to `output-var/env`.'
+    echo '  * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Defaults to `output-var/env`. Special chars in variable name are replaced by "_"'
     echo '  * `(OUTPUT_VAR_PATH)` base path used for all *_VAR_FILE. Defaults to `output-var`.'
     echo ''
     exit 1
@@ -36,7 +36,7 @@ mkdir -p $(dirname $OUTPUT_ENV_VAR_FILE)
 echo "############ Extracting Terraform outputs as a shell script -> $OUTPUT_ENV_VAR_FILE"
 
 IFS=$'\n'
-for s in $(cat $TERRAFORM_METADATA_FILE | jq -r 'to_entries|map("\(.key)=\"\(.value|tostring)\"")|.[]' ); do
+for s in $(cat $TERRAFORM_METADATA_FILE | jq -r 'to_entries|map("\(.key | sub("[^A-z0-9_]"; "_") )=\"\(.value|tostring)\"")|.[]' ); do
     echo "export $s" | tee -a $OUTPUT_ENV_VAR_FILE
     export $s
 done
