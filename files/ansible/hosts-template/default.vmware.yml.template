@@ -1,0 +1,8 @@
+plugin: vmware_vm_inventory
+strict: False
+hostname: '$VMWARE_SERVER'
+port: $VMWARE_PORT
+username: '$VMWARE_USERNAME'
+password: '$VMWARE_PASSWORD'
+validate_certs: False
+with_tags: True
