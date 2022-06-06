@@ -504,7 +504,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         # GCP dynamic inventory should be used as AWS_INVENTORY=true even if GCP_SERVICE_ACCOUNT_CONTENTS is not present
         # force GCP ansible_host to natIP using GCP_USE_PRIVATE_IP
         environment={
-            'GCP_SERVICE_ACCOUNT_CONTENTS': 'true',
+            'GCP_INVENTORY': 'true',
             'GCP_USE_PRIVATE_IP': 'false',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
@@ -523,13 +523,55 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
         self.assertEquals(r.exit_code, 0)
 
-    def test_ec2_azure_gcp_hosts_inventory(self):
+    def test_vmware_hosts_inventory(self):
+        # Vmware dynamic inventory should not be used as VMWARE_VM_INVENTORY default to auto and VMWARE_SERVER is not present
+        r = self.drun(cmd="/usr/bin/ansible-runner")
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.vmware.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+        # assert that no Vmware inventory not will be loaded from /etc/ansible/hosts
+        self.assertFalse(os.path.exists("/etc/ansible/hosts/default.vmware.yml"))
+
+        # Vmware dynamic inventory should be used as VMWARE_SERVER is present
+        environment={
+            'VMWARE_SERVER': 'foo',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.vmware.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+        r = self.drun(cmd="cat /etc/ansible/hosts/default.vmware.yml")
+        self.assertTrue(self.output_contains(r.output, ".*hostname: 'foo'"))
+
+        # Vmware dynamic inventory should be used as VMWARE_VM_INVENTORY=true even if VMWARE_SERVER is not present
+        environment={
+            'VMWARE_VM_INVENTORY': 'true',
+            'VMWARE_USERNAME': 'bar',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.vmware.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+        r = self.drun(cmd="cat /etc/ansible/hosts/default.vmware.yml")
+        self.assertTrue(self.output_contains(r.output, ".*username: 'bar'"))
+
+        # Vmware dynamic inventory should not be used as VMWARE_VM_INVENTORY=false even if VMWARE_SERVER is present
+        environment={
+            'VMWARE_VM_INVENTORY': 'false',
+            'VMWARE_SERVER': 'foo',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.vmware.yml'))
+        self.assertEquals(r.exit_code, 0)
+
+    def test_all_hosts_inventory(self):
         # EC2 dynamic inventory should be used as AWS_INVENTORY defaults to auto and AWS_ACCESS_KEY_ID is present
         # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is present
         environment={
             'AZURE_SUBSCRIPTION_ID': 'foo',
             'AWS_ACCESS_KEY_ID': 'bar',
             'GCP_SERVICE_ACCOUNT_CONTENTS': 'bli',
+            'VMWARE_SERVER': 'foo',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         # Azure
@@ -541,6 +583,8 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
         # GCP
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
+        # Vmware
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.vmware.yml'))
         self.assertEquals(r.exit_code, 0)
 
 class AnsibleCliTestCase(TestCase):
