@@ -269,7 +269,8 @@ This script is mostly expected to be used by the `merge-stack-and-config` script
 Its purpose is to export all terraform outputs as both a YAML and shell script files in addition to loading them as environment variables in the current shell execution scope.
 
 ./scripts/extract-terraform-outputs
-  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata`.'
+  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata` and fallback to TERRAFORM_DEFAULT_METADATA_FILE.'
+  * `(TERRAFORM_DEFAULT_METADATA_FILE)` Defaults to `tfstate/metadata`.'
   * `(OUTPUT_ANSIBLE_VAR_FILE)` Ansible variables file. Defaults to `output-var/all`. You might want to use `ansible-playbook/group_vars/all`.'
   * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Defaults to `output-var/env`. Special chars in variable name are replaced by "_"'
   * `(OUTPUT_VAR_PATH)` base path used for all *_VAR_FILE. Defaults to `output-var`.'
