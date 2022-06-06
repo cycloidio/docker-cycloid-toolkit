@@ -108,6 +108,46 @@ shared:
           - deploy
 ```
 
+## ansible-runner-inventory
+
+This script use env vars configuration to run ansible-inventory command. Purpose is to help troubleshooting Ansible inventory issues
+keeping all features and automatic inventory load from ansible-common.sh
+
+./scripts/ansible-runner-inventory
+  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.
+
+Example of pipeline configuration :
+
+**YAML anchors**
+
+```YAML
+shared:
+  - &run-ansible-inventory
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cycloid/cycloid-toolkit
+          tag: latest
+      run:
+        path: /usr/bin/ansible-runner-inventory
+      inputs:
+      - name: ansible-playbook
+        path: ansible-playbook
+```
+
+**usage**
+
+```YAML
+    - task: run-ansible
+      <<: *run-ansible-inventory
+      params:
+        AWS_ACCESS_KEY_ID: ((aws_access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
+        ANSIBLE_PLAYBOOK_PATH: ansible-playbook
+```
+
 ## aws-ami-cleaner
 
 Provide a way to clean old Amazon AMI. Usually usefull whan you often build new AMI for your ASG.
