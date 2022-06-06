@@ -110,5 +110,5 @@ RUN wget -O changie.tar.gz https://github.com/miniscruff/changie/releases/downlo
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
 
-# Install gcp_compute inventory plugin
-RUN ansible-galaxy collection install google.cloud
+# Install Ansible galaxy collections
+RUN ansible-galaxy collection install google.cloud ansible.windows
