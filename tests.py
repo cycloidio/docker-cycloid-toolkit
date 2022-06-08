@@ -94,13 +94,22 @@ class ExtractTerraformOutputsTestCase(TestCase):
                                   )
 
 
-    def test_file_exist(self):
+    def test_file_not_exist(self):
         environment={
             'TERRAFORM_METADATA_FILE': 'fake-file',
         }
         r = self.drun(cmd="/usr/bin/extract-terraform-outputs", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ERROR:.*does not exist'))
         self.assertEquals(r.exit_code, 1)
+
+    def test_default_file_fallback(self):
+        environment={
+            'TERRAFORM_METADATA_FILE': 'fake-file',
+            'TERRAFORM_DEFAULT_METADATA_FILE': 'metadata',
+        }
+        r = self.drun(cmd="/usr/bin/extract-terraform-outputs", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*Warning:.*does not exist.*'))
+        self.assertEquals(r.exit_code, 0)
 
     def test_file_exist(self):
         r = self.drun(cmd="/usr/bin/extract-terraform-outputs")

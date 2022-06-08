@@ -52,6 +52,13 @@ gcp_compute vars:
   * `(GCP_SERVICE_ACCOUNT_CONTENTS)`: Used by GCP dynamic inventory. The GCP Service Account in JSON format.
   * `(GCP_USE_PRIVATE_IP)`: Can be either `True` or `False`. Default: `True`.
 
+vmware_vm_inventory vars:
+  * `(VMWARE_VM_INVENTORY)`: If the VMware Guest inventory needs to be used or not, can be either `true`, `false` or `auto`. `auto` checks if `VMWARE_SERVER` is set or not. Default: `auto`.
+  * `(VMWARE_SERVER)`: Used by VMware Guest inventory. Name or IP address of vCenter server.
+  * `(VMWARE_PORT)`: Used by VMware Guest inventory. Service port of vCenter server. Default: 443
+  * `(VMWARE_USERNAME)`: Used by VMware Guest inventory. Name of vSphere user.
+  * `(VMWARE_PASSWORD)`: Used by VMware Guest inventory. Password of vSphere user.
+
 Example of pipeline configuration :
 
 **YAML anchors**
@@ -99,6 +106,46 @@ shared:
           env: ((env))
         TAGS:
           - deploy
+```
+
+## ansible-runner-inventory
+
+This script use env vars configuration to run ansible-inventory command. Purpose is to help troubleshooting Ansible inventory issues
+keeping all features and automatic inventory load from ansible-common.sh
+
+./scripts/ansible-runner-inventory
+  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.
+
+Example of pipeline configuration :
+
+**YAML anchors**
+
+```YAML
+shared:
+  - &run-ansible-inventory
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cycloid/cycloid-toolkit
+          tag: latest
+      run:
+        path: /usr/bin/ansible-runner-inventory
+      inputs:
+      - name: ansible-playbook
+        path: ansible-playbook
+```
+
+**usage**
+
+```YAML
+    - task: run-ansible
+      <<: *run-ansible-inventory
+      params:
+        AWS_ACCESS_KEY_ID: ((aws_access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
+        ANSIBLE_PLAYBOOK_PATH: ansible-playbook
 ```
 
 ## aws-ami-cleaner
@@ -222,7 +269,8 @@ This script is mostly expected to be used by the `merge-stack-and-config` script
 Its purpose is to export all terraform outputs as both a YAML and shell script files in addition to loading them as environment variables in the current shell execution scope.
 
 ./scripts/extract-terraform-outputs
-  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata`.'
+  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata` and fallback to TERRAFORM_DEFAULT_METADATA_FILE.'
+  * `(TERRAFORM_DEFAULT_METADATA_FILE)` Defaults to `tfstate/metadata`.'
   * `(OUTPUT_ANSIBLE_VAR_FILE)` Ansible variables file. Defaults to `output-var/all`. You might want to use `ansible-playbook/group_vars/all`.'
   * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Defaults to `output-var/env`. Special chars in variable name are replaced by "_"'
   * `(OUTPUT_VAR_PATH)` base path used for all *_VAR_FILE. Defaults to `output-var`.'

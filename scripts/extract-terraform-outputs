@@ -5,7 +5,8 @@ usage()
     echo 'You should provide the following env vars :'
     echo ''
     echo "$0"
-    echo '  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata`.'
+    echo '  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata` and fallback to TERRAFORM_DEFAULT_METADATA_FILE.'
+    echo '  * `(TERRAFORM_DEFAULT_METADATA_FILE)` Defaults to `tfstate/metadata`.'
     echo '  * `(OUTPUT_ANSIBLE_VAR_FILE)` Ansible variables file. Defaults to `output-var/all`. You might want to use `ansible-playbook/group_vars/all`.'
     echo '  * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Defaults to `output-var/env`. Special chars in variable name are replaced by "_"'
     echo '  * `(OUTPUT_VAR_PATH)` base path used for all *_VAR_FILE. Defaults to `output-var`.'
@@ -17,6 +18,7 @@ if [ -n "$1" ]; then usage; fi
 
 # Set defaults
 export TERRAFORM_METADATA_FILE="${TERRAFORM_METADATA_FILE:-terraform/metadata}"
+export TERRAFORM_DEFAULT_METADATA_FILE="${TERRAFORM_DEFAULT_METADATA_FILE:-tfstate/metadata}"
 export OUTPUT_VAR_PATH="${OUTPUT_VAR_PATH:-output-var}"
 export OUTPUT_ANSIBLE_VAR_FILE="${OUTPUT_ANSIBLE_VAR_FILE:-$OUTPUT_VAR_PATH/group_vars/all}"
 export OUTPUT_ENV_VAR_FILE="${OUTPUT_ENV_VAR_FILE:-$OUTPUT_VAR_PATH/env}"
@@ -24,8 +26,13 @@ export OUTPUT_ENV_VAR_FILE="${OUTPUT_ENV_VAR_FILE:-$OUTPUT_VAR_PATH/env}"
 set -e
 
 if ! [ -f "$TERRAFORM_METADATA_FILE" ]; then
-    echo "$0 - ERROR: the Terraform output file '${TERRAFORM_METADATA_FILE}' does not exist."
-    exit 1
+    if [ -f "$TERRAFORM_DEFAULT_METADATA_FILE" ]; then
+        echo "$0 - Warning: the Terraform output file '${TERRAFORM_METADATA_FILE}' does not exist. Fallback to default '${TERRAFORM_DEFAULT_METADATA_FILE}'"
+        TERRAFORM_METADATA_FILE="${TERRAFORM_DEFAULT_METADATA_FILE}"
+    else
+        echo "$0 - ERROR: the Terraform output file '${TERRAFORM_METADATA_FILE}' does not exist."
+        exit 1
+    fi
 fi
 
 mkdir -p $(dirname $OUTPUT_ANSIBLE_VAR_FILE)

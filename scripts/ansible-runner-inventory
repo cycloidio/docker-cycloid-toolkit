@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
+
+usage()
+{
+    echo 'You should provide the following env vars:'
+    echo ''
+    echo "$0"
+    echo '  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.'
+    echo ''
+    exit 1
+}
+if [ -n "$1" ]; then usage; fi
+
+source /usr/bin/ansible-common.sh
+
+#
+# Set defaults
+#
+export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
+export ANSIBLE_INVENTORY_ARGS="${ANSIBLE_INVENTORY_ARGS:---graph --vars}"
+
+# Check if playbook path exists
+if [ ! -d "$ANSIBLE_PLAYBOOK_PATH" ]; then
+    echo "Ansible playbook directory does not exists, please verify your parameters. (ANSIBLE_PLAYBOOK_PATH: $ANSIBLE_PLAYBOOK_PATH)"
+    exit 1
+fi
+
+cd $ANSIBLE_PLAYBOOK_PATH
+
+echo "######################## Running ansible inventory in $ANSIBLE_PLAYBOOK_PATH"
+
+ansible-inventory ${ANSIBLE_EXTRA_ARGS} ${ANSIBLE_INVENTORY_ARGS}
+
+exit $?

@@ -99,9 +99,16 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
 RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/cy-wrapper.sh > /usr/bin/cy \
     && chmod +x /usr/bin/cy
 
+# Install Changie
+RUN wget -O changie.tar.gz https://github.com/miniscruff/changie/releases/download/v1.7.0/changie_1.7.0_linux_amd64.tar.gz \
+    && tar xf changie.tar.gz changie \
+    && rm changie.tar.gz \
+    && chmod +x changie \
+    && mv changie /usr/local/bin/changie
+
 # Contain ec2.py dynamic inventory from https://github.com/ansible-collections/community.aws/tree/main/scripts/inventory or https://github.com/ansible/ansible/blob/stable-2.9/contrib/inventory/ec2.py
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
 
-# Install gcp_compute inventory plugin
-RUN ansible-galaxy collection install google.cloud
+# Install Ansible galaxy collections
+RUN ansible-galaxy collection install google.cloud ansible.windows
