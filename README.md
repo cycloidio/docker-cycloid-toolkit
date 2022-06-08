@@ -108,6 +108,46 @@ shared:
           - deploy
 ```
 
+## ansible-runner-inventory
+
+This script use env vars configuration to run ansible-inventory command. Purpose is to help troubleshooting Ansible inventory issues
+keeping all features and automatic inventory load from ansible-common.sh
+
+./scripts/ansible-runner-inventory
+  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.
+
+Example of pipeline configuration :
+
+**YAML anchors**
+
+```YAML
+shared:
+  - &run-ansible-inventory
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: cycloid/cycloid-toolkit
+          tag: latest
+      run:
+        path: /usr/bin/ansible-runner-inventory
+      inputs:
+      - name: ansible-playbook
+        path: ansible-playbook
+```
+
+**usage**
+
+```YAML
+    - task: run-ansible
+      <<: *run-ansible-inventory
+      params:
+        AWS_ACCESS_KEY_ID: ((aws_access_key))
+        AWS_SECRET_ACCESS_KEY: ((aws_secret_key))
+        ANSIBLE_PLAYBOOK_PATH: ansible-playbook
+```
+
 ## aws-ami-cleaner
 
 Provide a way to clean old Amazon AMI. Usually usefull whan you often build new AMI for your ASG.
@@ -229,7 +269,8 @@ This script is mostly expected to be used by the `merge-stack-and-config` script
 Its purpose is to export all terraform outputs as both a YAML and shell script files in addition to loading them as environment variables in the current shell execution scope.
 
 ./scripts/extract-terraform-outputs
-  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata`.'
+  * `(TERRAFORM_METADATA_FILE)` Defaults to `terraform/metadata` and fallback to TERRAFORM_DEFAULT_METADATA_FILE.'
+  * `(TERRAFORM_DEFAULT_METADATA_FILE)` Defaults to `tfstate/metadata`.'
   * `(OUTPUT_ANSIBLE_VAR_FILE)` Ansible variables file. Defaults to `output-var/all`. You might want to use `ansible-playbook/group_vars/all`.'
   * `(OUTPUT_ENV_VAR_FILE)` Shell environment variables file. Defaults to `output-var/env`. Special chars in variable name are replaced by "_"'
   * `(OUTPUT_VAR_PATH)` base path used for all *_VAR_FILE. Defaults to `output-var`.'
