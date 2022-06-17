@@ -111,4 +111,5 @@ COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
 
 # Install Ansible galaxy collections
-RUN ansible-galaxy collection install google.cloud ansible.windows
+# Note: The if condition ensure we run this command only on Ansible version 2.9 and above. As collection is not available before.
+RUN if [[ "$( echo -e "${ANSIBLE_VERSION}\n2.8\n" | sed -r 's/^([0-9]+\.[0-9]+).*$/\1/g' | sort -V | tail -n1)" != "2.8" ]]; then ansible-galaxy collection install google.cloud ansible.windows; fi
