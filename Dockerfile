@@ -26,6 +26,7 @@ RUN ln -s /lib /lib64 \
             libxml2 \
             py${PYTHON_VERSION}-lxml \
             pwgen \
+            mkpasswd \
             python${PYTHON_VERSION} \
             openssl \
             ca-certificates \
