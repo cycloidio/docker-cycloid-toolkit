@@ -7,6 +7,7 @@ ARG PYTHON_VERSION=3
 ARG ANSIBLE_VERSION=2.*
 
 ADD requirements.txt /opt/
+ADD requirements-vmware.txt /opt/
 
 # Base packages
 RUN ln -s /lib /lib64 \
@@ -25,7 +26,9 @@ RUN ln -s /lib /lib64 \
             libc6-compat \
             libxml2 \
             py${PYTHON_VERSION}-lxml \
+            py${PYTHON_VERSION}-distutils-extra \
             pwgen \
+            ncurses \
             mkpasswd \
             python${PYTHON_VERSION} \
             openssl \
@@ -53,11 +56,13 @@ RUN ln -s /lib /lib64 \
             openssl-dev \
             linux-headers \
             libxml2-dev \
+            libxslt-dev \
             musl-dev \
             krb5-dev \
     && \
         pip${PYTHON_VERSION} install pip --upgrade && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
+        pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} \
     && \
         ln -s $(which python${PYTHON_VERSION}) /bin/python \
@@ -71,6 +76,7 @@ RUN ln -s /lib /lib64 \
             openssl-dev \
             linux-headers \
             libxml2-dev \
+            libxslt-dev \
             krb5-dev \
             musl-dev \
     && \

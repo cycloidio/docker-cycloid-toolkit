@@ -1,0 +1,27 @@
+git+https://github.com/vmware/vsphere-automation-sdk-python.git
+
+# Note: this separated file has been created because pip keep failing with random errors or timeout, such as the one below for example.
+# Since we moved this requirement in it's own decicated file we were able to build the image without any issues.
+#
+#   INFO: pip is looking at multiple versions of openshift to determine which version is compatible with other requirements. This could take a while.
+#   Collecting openshift
+#     Downloading openshift-0.13.0.tar.gz (19 kB)
+#     Preparing metadata (setup.py): started
+#     Preparing metadata (setup.py): finished with status 'error'
+#     error: subprocess-exited-with-error
+#
+#     × python setup.py egg_info did not run successfully.
+#     │ exit code: 1
+#     ╰─> [8 lines of output]
+#         Traceback (most recent call last):
+#           File "<string>", line 2, in <module>
+#           File "<pip-setuptools-caller>", line 34, in <module>
+#           File "/tmp/pip-install-jpiprv80/openshift_76417390d46c49c1a07b4ee16c1931bc/setup.py", line 49, in <module>
+#             install_requires=extract_requirements('requirements.txt'),
+#           File "/tmp/pip-install-jpiprv80/openshift_76417390d46c49c1a07b4ee16c1931bc/setup.py", line 36, in extract_requirements
+#             with open(filename, 'r') as requirements_file:
+#         FileNotFoundError: [Errno 2] No such file or directory: 'requirements.txt'
+#         [end of output]
+#
+#     note: This error originates from a subprocess, and is likely not a problem with pip.
+#   error: metadata-generation-failed

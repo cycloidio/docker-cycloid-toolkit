@@ -12,6 +12,7 @@
 # -c or --color define the color for the print. See the array colors for the available options.
 # -n or --noline directs the system not to print a new line after the content.
 # Last argument is the message to be printed.
+
 cecho () {
 
     declare -A colors;
@@ -58,7 +59,7 @@ cecho () {
     if [ "$newLine" = true ] ; then
         echo;
     fi
-    tput sgr0; #  Reset text attributes to normal without clearing screen.
+    tput -T xterm-256color sgr0; #  Reset text attributes to normal without clearing screen.
 
     return;
 }
