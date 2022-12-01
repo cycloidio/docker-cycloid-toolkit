@@ -74,11 +74,15 @@ pwarning () {
 }
 
 perror () {
-
+    xtrace_enabled=${-//[^x]/}
+    set +x
     cecho -c 'red' "$@";
+    if [[ -n "$xtrace_enabled" ]]; then set -x; else set +x; fi
 }
 
 pinfo () {
-
+    xtrace_enabled=${-//[^x]/}
+    set +x
     cecho -c 'blue' "$@";
+    if [[ -n "$xtrace_enabled" ]]; then set -x; else set +x; fi
 }
