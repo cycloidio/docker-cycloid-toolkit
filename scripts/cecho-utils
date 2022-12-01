@@ -14,6 +14,8 @@
 # Last argument is the message to be printed.
 
 cecho () {
+    xtrace_enabled=${-//[^x]/}
+    set +x
 
     declare -A colors;
     colors=(\
@@ -61,12 +63,14 @@ cecho () {
     fi
     tput -T xterm-256color sgr0; #  Reset text attributes to normal without clearing screen.
 
+    if [[ -n "$xtrace_enabled" ]]; then set -x; else set +x; fi
     return;
 }
-
 pwarning () {
-
+    xtrace_enabled=${-//[^x]/}
+    set +x
     cecho -c 'yellow' "$@";
+    if [[ -n "$xtrace_enabled" ]]; then set -x; else set +x; fi
 }
 
 perror () {
