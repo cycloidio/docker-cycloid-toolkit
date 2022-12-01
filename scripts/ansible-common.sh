@@ -134,6 +134,10 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   ssh-add /root/.ssh/id_rsa
 fi
 set -x
+
+# list ssh keys loaded
+ssh-add -l
+
 if [ -n "$SSH_JUMP_URL" ]; then
   export ANSIBLE_SSH_ARGS="$ANSIBLE_SSH_ARGS -o 'ProxyJump=$SSH_JUMP_URL' -o 'ForwardAgent=yes'"
 
