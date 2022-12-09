@@ -9,7 +9,7 @@ run:
   path: concourse-dind-entrypoint.sh
   args:
     - 'bash'
-    - '-ec'
+    - '-exc'
     - |
       source /opt/docker-utils.sh
       docker_load image/image.tar
