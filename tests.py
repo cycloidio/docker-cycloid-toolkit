@@ -3,7 +3,7 @@
 
 import os
 from os.path import join as osjoin
-import unittest2 as unittest
+import unittest
 import json
 import shutil
 import os, sys
