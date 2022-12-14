@@ -72,6 +72,7 @@ class TestCase(unittest.TestCase):
             self.container.wait(condition='removed')
         except docker.errors.NotFound:
             pass
+        self.docker.close()
         self.clean_dir()
 
 class ExtractTerraformOutputsTestCase(TestCase):
@@ -100,7 +101,7 @@ class ExtractTerraformOutputsTestCase(TestCase):
         }
         r = self.drun(cmd="/usr/bin/extract-terraform-outputs", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ERROR:.*does not exist'))
-        self.assertEquals(r.exit_code, 1)
+        self.assertEqual(r.exit_code, 1)
 
     def test_default_file_fallback(self):
         environment={
@@ -109,13 +110,13 @@ class ExtractTerraformOutputsTestCase(TestCase):
         }
         r = self.drun(cmd="/usr/bin/extract-terraform-outputs", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*Warning:.*does not exist.*'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_file_exist(self):
         r = self.drun(cmd="/usr/bin/extract-terraform-outputs")
         self.assertTrue(self.output_contains(r.output, '.*Extracting Terraform outputs as YAML'))
         self.assertTrue(self.output_contains(r.output, '.*Extracting Terraform outputs as a shell'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         ## Check YAML
         r = self.drun(cmd="cat /tmp/merged-stack/group_vars/all")
@@ -154,7 +155,7 @@ class MergeStackAndConfigTestCase(TestCase):
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ERROR : the stack directory'))
-        self.assertEquals(r.exit_code, 1)
+        self.assertEqual(r.exit_code, 1)
 
     def test_basic(self):
 
@@ -164,15 +165,15 @@ class MergeStackAndConfigTestCase(TestCase):
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*Warning, CONFIG_PATH if not configured'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         files = self.file_list("/tmp/merged-stack")
-        self.assertEquals(['foo/bar', 'stack-file'], files)
+        self.assertEqual(['foo/bar', 'stack-file'], files)
 
         # regular run
         r = self.drun(cmd="/usr/bin/merge-stack-and-config")
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         files = self.file_list("/tmp/merged-stack")
-        self.assertEquals(['config-file', 'foo/bar', 'stack-file'], files)
+        self.assertEqual(['config-file', 'foo/bar', 'stack-file'], files)
 
         # Regular run but override one file from config
         environment={
@@ -180,7 +181,7 @@ class MergeStackAndConfigTestCase(TestCase):
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
         files = self.file_list("/tmp/merged-stack")
-        self.assertEquals(['config-file', 'foo/bar', 'stack-file'], files)
+        self.assertEqual(['config-file', 'foo/bar', 'stack-file'], files)
         r = self.drun(cmd="cat /tmp/merged-stack/stack-file")
         self.assertTrue(self.output_contains(r.output, 'File from config'))
 
@@ -194,9 +195,9 @@ class MergeStackAndConfigTestCase(TestCase):
             'CONFIG_ROOT_PATH': '.',
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         files = self.file_list("/tmp/merged-stack")
-        self.assertEquals(['config-file', 'foo/bar', 'stack-file'], files)
+        self.assertEqual(['config-file', 'foo/bar', 'stack-file'], files)
 
     def test_extra_paths(self):
         # Merge stack and config + extra paths (unvalid valid directory)
@@ -204,7 +205,7 @@ class MergeStackAndConfigTestCase(TestCase):
             'EXTRA_PATH': '["fake/directory"]',
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         self.assertTrue(self.output_contains(r.output, '.*Warning, the extra directory'))
 
         # Merge stack and config + extra paths
@@ -212,9 +213,9 @@ class MergeStackAndConfigTestCase(TestCase):
             'EXTRA_PATH': '["extra-path1/", "extra-path2/"]',
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         files = self.file_list("/tmp/merged-stack")
-        self.assertEquals(['1', '2', 'config-file', 'foo/bar', 'stack-file'], files)
+        self.assertEqual(['1', '2', 'config-file', 'foo/bar', 'stack-file'], files)
 
 
     def test_extra_ansible_vars(self):
@@ -223,7 +224,7 @@ class MergeStackAndConfigTestCase(TestCase):
             'EXTRA_ANSIBLE_VARS': "{\"severallines\": \"line1\nline2\", \"foo\": \"bar\"}",
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         r = self.drun(cmd="cat /tmp/merged-stack/group_vars/all")
         self.assertTrue(self.output_contains(r.output, 'foo: "bar"'))
         # Looking for "line1\nline2" but had to escape it
@@ -235,7 +236,7 @@ class MergeStackAndConfigTestCase(TestCase):
             'TERRAFORM_METADATA_FILE': 'terraform-data/metadata',
         }
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         r = self.drun(cmd="cat /tmp/merged-stack/group_vars/all")
         self.assertTrue(self.output_contains(r.output, 'terraform: output'))
 
@@ -244,10 +245,10 @@ class MergeStackAndConfigTestCase(TestCase):
     def test_git_tag_file(self):
         # If not git, don't extract tags
         r = self.drun(cmd="/usr/bin/merge-stack-and-config")
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="ls /tmp/merged-stack/tag")
-        self.assertEquals(r.exit_code, 1)
+        self.assertEqual(r.exit_code, 1)
 
         environment={
             'STACK_ROOT_PATH': '/tmp/stack',
@@ -271,10 +272,10 @@ class MergeStackAndConfigTestCase(TestCase):
                            " git --work-tree=/tmp/config  --git-dir=/tmp/config/.git commit -m tests'"))
 
         r = self.drun(cmd="/usr/bin/merge-stack-and-config", environment=environment)
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="ls /tmp/merged-stack/tag")
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
         self.assertTrue(self.output_contains(r.output, '[^-]+-[^-]+'))
 
 
@@ -326,7 +327,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*galaxy'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         # Try a force run of ansible galaxy
         environment={
@@ -335,7 +336,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*galaxy.*--force'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_basic(self):
         environment={
@@ -343,7 +344,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook -u admin'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         # Test PRIVATE_SSH_KEY
         r = self.drun(cmd="cat /root/.ssh/id_rsa")
@@ -373,14 +374,14 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*--tags foo,bar'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         environment={
             'SKIP_TAGS': '["foo", "bar"]',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*--skip-tags foo,bar'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         environment={
             'EXTRA_ANSIBLE_VARS': '{"foo":"value 1","bar": 42}',
@@ -391,7 +392,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-e @/tmp/extra_ansible_args.json'))
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-vvv'))
         self.assertTrue(self.output_contains(r.output, '.*"msg": "hello 42"'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="cat /tmp/extra_ansible_args.json")
         self.assertTrue(self.output_contains(r.output, '.*bar.+42'))
@@ -402,7 +403,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ANSIBLE_SSH_ARGS.*root@localhost'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         environment={
             'BASTION_URL': 'root@localhost',
@@ -410,13 +411,13 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ProxyJump=admin@bastion1,admin@bastion2'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_ec2_hosts_inventory(self):
         # EC2 dynamic inventory should not be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         # assert that no ec2 inventory will be loaded from /etc/ansible/hosts
         self.assertFalse(os.path.exists("/etc/ansible/hosts/ec2.ini"))
@@ -427,7 +428,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
         self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable [^_]+private_ip_address'))
@@ -440,7 +441,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
         self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable [^_]+ip_address'))
@@ -452,14 +453,14 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_azure_hosts_inventory(self):
         # Azure dynamic inventory should not be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is present
         environment={
@@ -470,7 +471,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY=true even if AZURE_SUBSCRIPTION_ID is not present
         environment={
@@ -486,7 +487,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*private_ipv4_addresses \+ public_dns_hostnames \+ public_ipv4_addresses'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory configuration
         if float(self.ansible_version) >= 2.8:
@@ -529,13 +530,13 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_gcp_hosts_inventory(self):
         # GCP dynamic inventory should not be used as GCP_INVENTORY default to auto and GCP_SERVICE_ACCOUNT_CONTENTS is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         # assert that no GCP inventory will be loaded from /etc/ansible/hosts
         self.assertFalse(os.path.exists("/etc/ansible/hosts/default.gcp_compute.yml"))
@@ -546,7 +547,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/default.gcp_compute.yml")
         self.assertTrue(self.output_contains(r.output, '.*ansible_host: networkInterfaces\[0\].networkIP'))
@@ -560,7 +561,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/default.gcp_compute.yml")
         self.assertTrue(self.output_contains(r.output, '.*ansible_host: networkInterfaces\[0\].accessConfigs\[0\].natIP'))
@@ -572,7 +573,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_ec2_azure_gcp_hosts_inventory(self):
         # EC2 dynamic inventory should be used as AWS_INVENTORY defaults to auto and AWS_ACCESS_KEY_ID is present
@@ -592,7 +593,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
         # GCP
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
 class AnsibleCliTestCase(TestCase):
 
@@ -641,7 +642,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*-m ping'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_ansible_cli_with_command(self):
         environment={
@@ -651,7 +652,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*3 packets transmitted'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
     def test_ansible_cli_with_aws_azure_inventory(self):
         environment={
@@ -686,7 +687,7 @@ class CycloidCliTestCase(TestCase):
         }
         r = self.drun(cmd="/usr/bin/cy --version", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*cy version.*revision'))
-        self.assertEquals(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0)
 
 if __name__ == '__main__':
     unittest.main()
