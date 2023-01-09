@@ -1,0 +1,12 @@
+# Pull base image
+FROM cycloid/cycloid-toolkit:latest
+
+ENV PATH /google-cloud-sdk/bin:$PATH
+
+# Install gcloud from https://github.com/GoogleCloudPlatform/cloud-sdk-docker/blob/master/alpine/Dockerfile
+RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-412.0.0-linux-x86_64.tar.gz && \
+    tar -xf google-cloud-cli-412.0.0-linux-x86_64.tar.gz && \
+    rm -f google-cloud-cli-412.0.0-linux-x86_64.tar.gz && \
+    gcloud config set core/disable_usage_reporting false && \
+    gcloud config set component_manager/disable_update_check true && \
+    gcloud --version
