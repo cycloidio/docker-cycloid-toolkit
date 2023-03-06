@@ -4,6 +4,29 @@
 
 Docker image which contain tools and a scripts for cycloid.io deployment pipeline.
 
+**azure-latest**
+
+Due to https://github.com/Azure/azure-cli/issues/22955, the azure cli is not included in the basic toolkit image.
+We currently provide a build of the toolkit with azure cli under the `azure-latest` tag.
+
+Build note for this image:
+
+```bash
+docker build -t cycloid/cycloid-toolkit:azure-latest -f Dockerfile.azure .
+docker push cycloid/cycloid-toolkit:azure-latest
+```
+
+**gcp-latest**
+
+Due to the same reason as Azure image size, we currently provide a build of the toolkit with gcp cli under the `gcp-latest` tag.
+
+Build note for this image:
+
+```bash
+docker build -t cycloid/cycloid-toolkit:gcp-latest -f Dockerfile.gcp .
+docker push cycloid/cycloid-toolkit:gcp-latest
+```
+
 # Commands
 
 ## ansible-runner

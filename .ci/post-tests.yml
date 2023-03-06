@@ -9,12 +9,14 @@ run:
   path: concourse-dind-entrypoint.sh
   args:
     - 'bash'
-    - '-ec'
+    - '-exc'
     - |
       source /opt/docker-utils.sh
       docker_load image/image.tar
 
+
       export IMAGE_NAME="${REPOSITORY}:${TAG}"
+      docker tag $(cat image/digest) $IMAGE_NAME
       docker inspect $IMAGE_NAME
 
       apk update && apk add -q --no-progress python3 py-pip

@@ -133,10 +133,11 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   chmod 600  /root/.ssh/id_rsa
   ssh-add /root/.ssh/id_rsa
 fi
-set -x
 
 # list ssh keys loaded
+set +e
 ssh-add -l
+set -e
 
 if [ -n "$SSH_JUMP_URL" ]; then
   export ANSIBLE_SSH_ARGS="$ANSIBLE_SSH_ARGS -o 'ProxyJump=$SSH_JUMP_URL' -o 'ForwardAgent=yes'"

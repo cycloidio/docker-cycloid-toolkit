@@ -14,8 +14,9 @@
 # Last argument is the message to be printed.
 
 cecho () {
-    xtrace_enabled=${-//[^x]/}
+    current_xtrace_enabled=${-//[^x]/}
     set +x
+    xtrace_enabled="${xtrace_enabled:-$current_xtrace_enabled}"
 
     declare -A colors;
     colors=(\

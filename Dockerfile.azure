@@ -1,0 +1,14 @@
+# Pull base image
+FROM cycloid/cycloid-toolkit:latest
+
+# apk add ncurses
+#RUN apk --upgrade add --no-cache \
+RUN apk --upgrade add --no-cache  \
+            musl-dev python3-dev libffi-dev openssl-dev cargo make gcc \
+    && \
+        pip${PYTHON_VERSION} install --upgrade --no-cache-dir azure-cli \
+    && \
+        apk del \
+            gcc musl-dev python3-dev libffi-dev openssl-dev cargo make \
+    && \
+        rm -rf /var/cache/apk/*
