@@ -133,7 +133,6 @@ if [ -n "$SSH_PRIVATE_KEY" ]; then
   chmod 600  /root/.ssh/id_rsa
   ssh-add /root/.ssh/id_rsa
 fi
-set -x
 
 # list ssh keys loaded
 set +e
