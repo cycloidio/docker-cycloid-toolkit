@@ -68,8 +68,11 @@ source /usr/bin/ansible-common.sh
 # Set defaults
 #
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
+echo "ANSIBLE_PLAYBOOK_PATH=$ANSIBLE_PLAYBOOK_PATH"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
+echo "ANSIBLE_PLAYBOOK_NAME=$ANSIBLE_PLAYBOOK_NAME"
 export ANSIBLE_FORCE_GALAXY="${ANSIBLE_FORCE_GALAXY:-false}"
+echo "ANSIBLE_FORCE_GALAXY=$ANSIBLE_FORCE_GALAXY"
 export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
 
 if [ "${ANSIBLE_FORCE_GALAXY,,}" == "true" ]; then
@@ -94,6 +97,7 @@ fi
 
 echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
 
+set -x
 ansible --version
 ansible-playbook -u ${ANSIBLE_REMOTE_USER} --vault-password-file=.vault-password ${ANSIBLE_PLAYBOOK_NAME} -e cycloid_workdir=${CYCLOID_WORKDIR} --diff ${ANSIBLE_EXTRA_ARGS}
 
