@@ -56,6 +56,9 @@ keyed_groups:
 # places each host in a group named 'tag_(tag name)_(tag value)' for each tag on a VM.
 - prefix: tag
   key: tags
+# places each host in a group named 'resource_group_(resource_group name)', depending on the VM's resource group
+- prefix: resource_group
+  key: resource_group
 # places each host in a group named 'azure_loc_(location name)', depending on the VM's location
 - prefix: azure_loc
   key: location
