@@ -324,6 +324,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         # Run ansible galaxy
         environment={
             'ANSIBLE_PLAYBOOK_PATH': 'galaxy',
+            'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*galaxy'))
@@ -333,6 +334,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         environment={
             'ANSIBLE_PLAYBOOK_PATH': 'galaxy',
             'ANSIBLE_FORCE_GALAXY': 'true',
+            'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*galaxy.*--force'))
@@ -400,6 +402,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
     def test_ssh_jumps_args(self):
         environment={
             'BASTION_URL': 'root@localhost',
+            'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ANSIBLE_SSH_ARGS.*root@localhost'))
@@ -408,6 +411,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         environment={
             'BASTION_URL': 'root@localhost',
             'SSH_JUMP_URL': 'admin@bastion1,admin@bastion2',
+            'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*ProxyJump=admin@bastion1,admin@bastion2'))
@@ -639,6 +643,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         environment={
             'ANSIBLE_MODULE': 'ping',
             'ANSIBLE_TARGET_PATTERN': '127.0.0.1',
+            'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*-m ping'))
@@ -648,7 +653,8 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         environment={
             'ANSIBLE_MODULE': 'shell',
             'ANSIBLE_TARGET_PATTERN': '127.0.0.1',
-            'ANSIBLE_MODULE_ARGS': 'ping -c 3 127.0.0.1'
+            'ANSIBLE_MODULE_ARGS': 'ping -c 3 127.0.0.1',
+            'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
         self.assertTrue(self.output_contains(r.output, '.*3 packets transmitted'))
@@ -661,6 +667,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'ANSIBLE_MODULE_ARGS': 'ping -c 3 127.0.0.1',
             'AZURE_SUBSCRIPTION_ID': 'foo',
             'AWS_ACCESS_KEY_ID': 'bar',
+            'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
         if float(self.ansible_version) >= 2.8:
