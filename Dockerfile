@@ -1,10 +1,10 @@
 # Pull base image
-FROM alpine:3.15
+FROM alpine:3.17
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
 ARG PYTHON_VERSION=3
-ARG ANSIBLE_VERSION=2.*
+ARG ANSIBLE_VERSION=7.*
 
 ADD requirements.txt /opt/
 ADD requirements-vmware.txt /opt/
@@ -119,4 +119,4 @@ COPY scripts/* /usr/bin/
 
 # Install Ansible galaxy collections
 # Note: The if condition ensure we run this command only on Ansible version 2.9 and above. As collection is not available before.
-RUN if [[ "$( echo -e "${ANSIBLE_VERSION}\n2.8\n" | sed -r 's/^([0-9]+\.[0-9]+).*$/\1/g' | sort -V | tail -n1)" != "2.8" ]]; then ansible-galaxy collection install google.cloud ansible.windows; fi
+RUN if [[ "$( echo -e "${ANSIBLE_VERSION}\n2.8\n" | sed -r 's/^([0-9]+\.[0-9]+).*$/\1/g' | sort -V | tail -n1)" != "2.8" ]]; then ansible-galaxy collection install google.cloud ansible.windows azure.azcollection; fi
