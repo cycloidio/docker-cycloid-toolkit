@@ -1,10 +1,10 @@
 # Pull base image
-FROM alpine:3.17
+FROM alpine:3.18
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
 ARG PYTHON_VERSION=3
-ARG ANSIBLE_VERSION=7.*
+ARG ANSIBLE_VERSION=8.*
 
 ADD requirements.txt /opt/
 ADD requirements-vmware.txt /opt/
@@ -16,6 +16,7 @@ RUN ln -s /lib /lib64 \
             bash \
             sed \
             git \
+            coreutils \
             sudo \
             curl \
             zip \

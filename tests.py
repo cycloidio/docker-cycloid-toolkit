@@ -248,7 +248,7 @@ class MergeStackAndConfigTestCase(TestCase):
         self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="ls /tmp/merged-stack/tag")
-        self.assertEqual(r.exit_code, 1)
+        self.assertEqual(r.exit_code, 2)
 
         environment={
             'STACK_ROOT_PATH': '/tmp/stack',
@@ -356,6 +356,8 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 
         # Test SSH_PRIVATE_KEYS
         environment={
+            "ANSIBLE_DISPLAY_OK_HOSTS": "no",
+            "ANSIBLE_DISPLAY_SKIPPED_HOSTS": "no",
             'SSH_PRIVATE_KEY': '',
             'SSH_PRIVATE_KEYS': '''["-----BEGIN RSA PRIVATE KEY-----\nMIICWwIBAAKBgQCsZ1ao/9WyCzU7x843xbfI1aH/JdHWxNbEYrcceddNUBpEFu5m\nE8OakHADydCAd2KoYnWuPNb7Je433/b3YYimgOgKIZ46Y//RHqcyscu+v/zXDFUM\nXtMd00Qt/rtFgGGN1iLNS/XTqwKMU8ZJuAiKTg5YAp3Nc9h8ksEWRmnO1QIDAQAB\nAoGAAb8qSZwN9jfW2jw0AqymKArCEWu4rIxiAKtfX5J8c/QT0AzLbY1VtgMwn1k0\nG5kaDsqwlotXQkQoHbjPL8J1N/ZgNTjOvANLqFiAv0rU/2iko2gzHke7PLJYIWon\nFdHTes2qPVwkdRjdCTZDTIKZTF3rFdWfBNXUn2xdJCYoOAECQQDlweRhR7t0YWCk\nneR8yYGjEAbqJrF5uuGAOdMshgzsWeQV2yqXCDJItRoCFfnRQJ0CH+k9tC0wZbH/\nsga/kkZBAkEAwBhsTLEq4FMC67xGqI9BG11fO2ygvGnOOIEx2C8QIWiTuCq11ifB\nQqMCAtdW4XUMcSeWl9xXdDxU/UA2WforlQJAQcWMpFCNmBZcPSO6CgMBanWnFRa4\njZly/msPSdqiDnL5OUyBV7UP+AJoDJrP5hgyGi6abYCLwyQJnaIQDn1IQQJALYCb\nhr8gzOpc8sIyapMkdPr1J/pfSMI3WyMfT3o2c/N1qlZTpFreaI58V3fy2I0FWXhr\nL6W+AYaZCzQ+q6ma0QJATjW1WRs3EdeVei96fqyU6cbq2vMoyU4UlZMmxU8oWhVG\ngoaHVf9crFoEuUYL9QNG28OJYbyQo5u+MaVrcT/l0A==\n-----END RSA PRIVATE KEY-----", "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQDAn7Kv6B/IPi+cV0WAMm6RYarDG6p4c5EMaHgpIvt0TU4KzHcR\npgXjjIKBJdYlVYtkb7xuCsJKHOqq5jFMSEhw2mCJtvnGADJdx8wNQZiUcOzVixYp\nJw+47clp15ApxxYmkKSgEynZsbIKuWDZaMX6eZ4PFR4G8kFB1x6YnSDPkQIDAQAB\nAoGAOUOAoJDWWfY6uzSqobjca/XoCQbBf/uDRHgOONSAgou0xrsQLrv3hjUwWup/\npiuvO9WH5ALozZWZIeM7Bp16gyUVUA4B4TRCA0cgs64zhJBUhlRzAa8EWUkTimjN\n7VjpnM2lfsRpDzBRHiFNvK71JGEtoxKla+9wO+7cCuFeu/0CQQD8tmCKIg0c+3K3\ntupKwPtSZ2JlLQ0mWol/EEPknJZDGc8dOQpic7yscw8S0PsX+dRP/2W+DaLiWQYS\n0Rc/dBxbAkEAwyE0UDqHmVBxCG+AI4prOXF7YxI/d2XbcC8cFvna4RFNl7v+d5h2\nYN1m6tMDIw+C/XUIIDnJSrsvkmzH+Rh3gwJBAIW6HKv8CORlSvdcm+6i4Ftiyfaw\nOF0rW8cZXFQFaJ5pcegM3ynqBNVcrYVPgQ/W7DrI85X2sVMFuOkMLDkvwDECQH9E\nENKi2f3ssUxHLNQBW53Dni4noK1HCbBJiZCStWdF2c21F2r5TXwv6wgNSGZ9n3mf\n8wTRq6/KFmTx/htBEfECQHfDWbA5hfnpsN3HbAO+Hcv6oBEY7CEOTB2Jcw6jnKR3\n/AT0NXdfaGORivBUiFk6jq1za8KfiXz6ipLzrSnnPZ0=\n-----END RSA PRIVATE KEY-----"]''',
         }

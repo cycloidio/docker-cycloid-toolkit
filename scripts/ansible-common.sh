@@ -8,7 +8,7 @@ fi
 
 export CYCLOID_WORKDIR=$PWD
 
-export ANSIBLE_VERSION="$(ansible --version | head -n1 | awk '{print $2}')"
+export ANSIBLE_VERSION="$(ansible --version | head -n1 | sed -r 's/[^0-9]+([0-9\.]+)[^0-9]+/\1/')"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
 
 # Used to set a a default ssh multiplex. You can override it to disable it
@@ -51,6 +51,21 @@ export ANSIBLE_EXTRA_VARS="${ANSIBLE_EXTRA_VARS:-$EXTRA_ANSIBLE_VARS}"
 #
 # Construct vars
 #
+
+versionIsHigher() {
+  printf '%s\n%s' "$1" "$2" | sort -rC -V
+}
+
+# actionnable callback is now deprecated: ERROR! [DEPRECATED]: community.general.actionable has been removed. Use the 'default' callback plugin with 'display_skipped_hosts = no' and 'display_ok_hosts = no' options. This feature was removed from community.general in version 2.0.0. Please update your playbooks.
+# In order to keep a backward compatibility using the suggested variables with the default callback
+if [ "$ANSIBLE_STDOUT_CALLBACK" == "actionable" ]; then
+  if versionIsHigher "$ANSIBLE_VERSION" "2.8"; then
+    export ANSIBLE_STDOUT_CALLBACK="default"
+    export ANSIBLE_DISPLAY_OK_HOSTS="no"
+    export ANSIBLE_DISPLAY_SKIPPED_HOSTS="no"
+  fi
+fi
+
 if [ -n "$ANSIBLE_EXTRA_VARS" ]; then
   # This will read the whole file in a loop, then replaces the newline(s) with a \\n.
   echo "$ANSIBLE_EXTRA_VARS" | sed ':a;N;$!ba;s/\n/\\n/g' | jq -M . > /tmp/extra_ansible_args.json
