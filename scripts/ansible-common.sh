@@ -6,21 +6,30 @@ if [ -n "$DEBUG" ]; then
   set -x
 fi
 
-export CYCLOID_WORKDIR=$PWD
+# Keep compatibility with old namings
+export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
+export EXTRA_ANSIBLE_VARS="${EXTRA_ANSIBLE_VARS:-$EXTRA_VARS}"
+export EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS:-$EXTRA_ARGS}"
+export ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS:-$EXTRA_ANSIBLE_ARGS}"
+export ANSIBLE_EXTRA_VARS="${ANSIBLE_EXTRA_VARS:-$EXTRA_ANSIBLE_VARS}"
+export AWS_EC2_COMPOSE_ANSIBLE_HOST="${AWS_EC2_COMPOSE_ANSIBLE_HOST:-$EC2_VPC_DESTINATION_VARIABLE}"
 
+export CYCLOID_WORKDIR=$PWD
 export ANSIBLE_VERSION="$(ansible --version | head -n1 | sed -r 's/[^0-9]+([0-9\.]+)[^0-9]+/\1/')"
 export ANSIBLE_REMOTE_USER="${ANSIBLE_REMOTE_USER:-admin}"
 
-# Used to set a a default ssh multiplex. You can override it to disable it
+# Used to set a default ssh multiplex. You can override it to disable it
 export EXTRA_ANSIBLE_SSH_ARGS="${EXTRA_ANSIBLE_SSH_ARGS:-"-o ControlMaster=auto -o ControlPersist=60s"}"
 export ANSIBLE_SSH_ARGS="${ANSIBLE_SSH_ARGS} ${EXTRA_ANSIBLE_SSH_ARGS}"
 export ANSIBLE_FORCE_COLOR="${ANSIBLE_FORCE_COLOR:-true}"
 export ANSIBLE_STDOUT_CALLBACK="${ANSIBLE_STDOUT_CALLBACK:-actionable}"
 
-# Default envvars for ec2.py
+# Default envvars for aws_ec2
 export AWS_INVENTORY="${AWS_INVENTORY:-auto}"
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
-export EC2_VPC_DESTINATION_VARIABLE="${EC2_VPC_DESTINATION_VARIABLE:-private_ip_address}"
+export AWS_REGION="${AWS_REGION:-$AWS_DEFAULT_REGION}" # Because some scripts use this variable instead of the default one
+export AWS_EC2_COMPOSE_ANSIBLE_HOSTE="${AWS_EC2_COMPOSE_ANSIBLE_HOST:-private_ip_address}"
+export AWS_EC2_TEMPLATE_FILE="${AWS_EC2_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.aws_ec2.yml.template}"
 
 # Default envvars for azure_rm.py
 export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST:-"(public_dns_hostnames + public_ipv4_addresses + private_ipv4_addresses) | first"}"
@@ -29,6 +38,7 @@ export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
 # Make sure args work for Ansible azure rm and https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py
 export AZURE_TENANT="${AZURE_TENANT:-$AZURE_TENANT_ID}"
 export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
+export AZURE_TEMPLATE_FILE="${AZURE_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.azure_rm.yml.template}"
 export ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES="${ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES:-False}"
 export ANSIBLE_PLUGIN_AZURE_HOST="${ANSIBLE_PLUGIN_AZURE_HOST:-""}"
 
@@ -36,17 +46,13 @@ export ANSIBLE_PLUGIN_AZURE_HOST="${ANSIBLE_PLUGIN_AZURE_HOST:-""}"
 export GCP_INVENTORY="${GCP_INVENTORY:-auto}"
 export GCP_USE_PRIVATE_IP="${GCP_USE_PRIVATE_IP:-True}"
 export GCP_NETWORK_INTERFACE_IP="${GCP_NETWORK_INTERFACE_IP:-"networkInterfaces[0].networkIP"}"
+export GCP_TEMPLATE_FILE="${GCP_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.gcp_compute.yml.template}"
 
 # Default envvars for vmware_vm_inventory
 export VMWARE_VM_INVENTORY="${VMWARE_VM_INVENTORY:-auto}"
 export VMWARE_PORT="${VMWARE_PORT:-443}"
+export VMWARE_TEMPLATE_FILE="${VMWARE_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.vmware.yml.template}"
 
-# Keep compatibility with old namings
-export SSH_PRIVATE_KEY="${SSH_PRIVATE_KEY:-$BASTION_PRIVATE_KEY}"
-export EXTRA_ANSIBLE_VARS="${EXTRA_ANSIBLE_VARS:-$EXTRA_VARS}"
-export EXTRA_ANSIBLE_ARGS="${EXTRA_ANSIBLE_ARGS:-$EXTRA_ARGS}"
-export ANSIBLE_EXTRA_ARGS="${ANSIBLE_EXTRA_ARGS:-$EXTRA_ANSIBLE_ARGS}"
-export ANSIBLE_EXTRA_VARS="${ANSIBLE_EXTRA_VARS:-$EXTRA_ANSIBLE_VARS}"
 
 #
 # Construct vars
@@ -79,9 +85,8 @@ if [ -n "$SKIP_TAGS" ]; then
 fi
 if [ "$AWS_INVENTORY" == "auto" ] && [ -n "$AWS_ACCESS_KEY_ID" ] || [ "${AWS_INVENTORY,,}" == "true" ]; then
   # Render ec2.ini template from envvars
-  envsubst < /etc/ansible/hosts-template/ec2.ini.template > /etc/ansible/hosts/ec2.ini
-  cp /etc/ansible/hosts-template/ec2.py /etc/ansible/hosts/
-  ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/ec2.py ${ANSIBLE_EXTRA_ARGS}"
+  envsubst < $AWS_EC2_TEMPLATE_FILE > /etc/ansible/hosts/aws_ec2.yml
+  ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/aws_ec2.yml ${ANSIBLE_EXTRA_ARGS}"
 fi
 
 if [ -z "${ANSIBLE_PLUGIN_AZURE_HOST}" ]; then
@@ -92,10 +97,10 @@ if [ -z "${ANSIBLE_PLUGIN_AZURE_HOST}" ]; then
   fi
 fi
 if [ "$AZURE_INVENTORY" == "auto" ] && [ -n "$AZURE_SUBSCRIPTION_ID" ] || [ "${AZURE_INVENTORY,,}" == "true" ]; then
-  if (( $(echo "${ANSIBLE_VERSION%.*} >= 2.8" |bc -l) )); then
+  if versionIsHigher "$ANSIBLE_VERSION" "2.8"; then
     # Render default.azure_rm.yml template from envvars
-    envsubst < /etc/ansible/hosts-template/default.azure_rm.yml.template > /etc/ansible/hosts/default.azure_rm.yml
-    ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/default.azure_rm.yml ${ANSIBLE_EXTRA_ARGS}"
+    envsubst < $AZURE_TEMPLATE_FILE > /etc/ansible/hosts/azure_rm.yml
+    ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/azure_rm.yml ${ANSIBLE_EXTRA_ARGS}"
   else
     cp /etc/ansible/hosts-template/azure_rm.py /etc/ansible/hosts/
     ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/azure_rm.py ${ANSIBLE_EXTRA_ARGS}"
@@ -111,13 +116,13 @@ if [ "$GCP_INVENTORY" == "auto" ] && [ -n "$GCP_SERVICE_ACCOUNT_CONTENTS" ] || [
   export GCP_PROJECT=$(echo $GCP_SERVICE_ACCOUNT_CONTENTS | jq .project_id)
   export GCP_SERVICE_ACCOUNT_CONTENTS=$(echo $GCP_SERVICE_ACCOUNT_CONTENTS | tr '\n' ' ')
   # Render default.gcp_compute.yml template from envvars
-  envsubst < /etc/ansible/hosts-template/default.gcp_compute.yml.template > /etc/ansible/hosts/default.gcp_compute.yml
+  envsubst < $GCP_TEMPLATE_FILE > /etc/ansible/hosts/default.gcp_compute.yml
   ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/default.gcp_compute.yml ${ANSIBLE_EXTRA_ARGS}"
 fi
 
 if [ "$VMWARE_VM_INVENTORY" == "auto" ] && [ -n "$VMWARE_SERVER" ] || [ "${VMWARE_VM_INVENTORY,,}" == "true" ]; then
   # Render default.vmware.yml template from envvars
-  envsubst < /etc/ansible/hosts-template/default.vmware.yml.template > /etc/ansible/hosts/default.vmware.yml
+  envsubst < $VMWARE_TEMPLATE_FILE > /etc/ansible/hosts/default.vmware.yml
   ANSIBLE_EXTRA_ARGS=" -i /etc/ansible/hosts/default.vmware.yml ${ANSIBLE_EXTRA_ARGS}"
 fi
 

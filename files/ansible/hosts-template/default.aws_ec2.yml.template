@@ -1,0 +1,9 @@
+plugin: amazon.aws.aws_ec2
+
+compose:
+  ansible_host: $AWS_EC2_COMPOSE_ANSIBLE_HOST
+
+keyed_groups:
+  # Add hosts to tag_Name_Value groups for each Name/Value tag pair
+  - prefix: tag
+    key: tags
