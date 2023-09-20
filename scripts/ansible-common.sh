@@ -28,7 +28,7 @@ export ANSIBLE_STDOUT_CALLBACK="${ANSIBLE_STDOUT_CALLBACK:-actionable}"
 export AWS_INVENTORY="${AWS_INVENTORY:-auto}"
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-eu-west-1}"
 export AWS_REGION="${AWS_REGION:-$AWS_DEFAULT_REGION}" # Because some scripts use this variable instead of the default one
-export AWS_EC2_COMPOSE_ANSIBLE_HOSTE="${AWS_EC2_COMPOSE_ANSIBLE_HOST:-private_ip_address}"
+export AWS_EC2_COMPOSE_ANSIBLE_HOST="${AWS_EC2_COMPOSE_ANSIBLE_HOST:-private_ip_address}"
 export AWS_EC2_TEMPLATE_FILE="${AWS_EC2_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.aws_ec2.yml.template}"
 
 # Default envvars for azure_rm.py
