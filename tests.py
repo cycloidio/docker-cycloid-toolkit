@@ -11,6 +11,7 @@ import subprocess
 from distutils.util import strtobool
 import time
 import re
+from packaging import version
 
 import docker
 
@@ -248,7 +249,7 @@ class MergeStackAndConfigTestCase(TestCase):
         self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="ls /tmp/merged-stack/tag")
-        self.assertEqual(r.exit_code, 1)
+        self.assertEqual(r.exit_code, 2)
 
         environment={
             'STACK_ROOT_PATH': '/tmp/stack',
@@ -356,6 +357,8 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 
         # Test SSH_PRIVATE_KEYS
         environment={
+            "ANSIBLE_DISPLAY_OK_HOSTS": "no",
+            "ANSIBLE_DISPLAY_SKIPPED_HOSTS": "no",
             'SSH_PRIVATE_KEY': '',
             'SSH_PRIVATE_KEYS': '''["-----BEGIN RSA PRIVATE KEY-----\nMIICWwIBAAKBgQCsZ1ao/9WyCzU7x843xbfI1aH/JdHWxNbEYrcceddNUBpEFu5m\nE8OakHADydCAd2KoYnWuPNb7Je433/b3YYimgOgKIZ46Y//RHqcyscu+v/zXDFUM\nXtMd00Qt/rtFgGGN1iLNS/XTqwKMU8ZJuAiKTg5YAp3Nc9h8ksEWRmnO1QIDAQAB\nAoGAAb8qSZwN9jfW2jw0AqymKArCEWu4rIxiAKtfX5J8c/QT0AzLbY1VtgMwn1k0\nG5kaDsqwlotXQkQoHbjPL8J1N/ZgNTjOvANLqFiAv0rU/2iko2gzHke7PLJYIWon\nFdHTes2qPVwkdRjdCTZDTIKZTF3rFdWfBNXUn2xdJCYoOAECQQDlweRhR7t0YWCk\nneR8yYGjEAbqJrF5uuGAOdMshgzsWeQV2yqXCDJItRoCFfnRQJ0CH+k9tC0wZbH/\nsga/kkZBAkEAwBhsTLEq4FMC67xGqI9BG11fO2ygvGnOOIEx2C8QIWiTuCq11ifB\nQqMCAtdW4XUMcSeWl9xXdDxU/UA2WforlQJAQcWMpFCNmBZcPSO6CgMBanWnFRa4\njZly/msPSdqiDnL5OUyBV7UP+AJoDJrP5hgyGi6abYCLwyQJnaIQDn1IQQJALYCb\nhr8gzOpc8sIyapMkdPr1J/pfSMI3WyMfT3o2c/N1qlZTpFreaI58V3fy2I0FWXhr\nL6W+AYaZCzQ+q6ma0QJATjW1WRs3EdeVei96fqyU6cbq2vMoyU4UlZMmxU8oWhVG\ngoaHVf9crFoEuUYL9QNG28OJYbyQo5u+MaVrcT/l0A==\n-----END RSA PRIVATE KEY-----", "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQDAn7Kv6B/IPi+cV0WAMm6RYarDG6p4c5EMaHgpIvt0TU4KzHcR\npgXjjIKBJdYlVYtkb7xuCsJKHOqq5jFMSEhw2mCJtvnGADJdx8wNQZiUcOzVixYp\nJw+47clp15ApxxYmkKSgEynZsbIKuWDZaMX6eZ4PFR4G8kFB1x6YnSDPkQIDAQAB\nAoGAOUOAoJDWWfY6uzSqobjca/XoCQbBf/uDRHgOONSAgou0xrsQLrv3hjUwWup/\npiuvO9WH5ALozZWZIeM7Bp16gyUVUA4B4TRCA0cgs64zhJBUhlRzAa8EWUkTimjN\n7VjpnM2lfsRpDzBRHiFNvK71JGEtoxKla+9wO+7cCuFeu/0CQQD8tmCKIg0c+3K3\ntupKwPtSZ2JlLQ0mWol/EEPknJZDGc8dOQpic7yscw8S0PsX+dRP/2W+DaLiWQYS\n0Rc/dBxbAkEAwyE0UDqHmVBxCG+AI4prOXF7YxI/d2XbcC8cFvna4RFNl7v+d5h2\nYN1m6tMDIw+C/XUIIDnJSrsvkmzH+Rh3gwJBAIW6HKv8CORlSvdcm+6i4Ftiyfaw\nOF0rW8cZXFQFaJ5pcegM3ynqBNVcrYVPgQ/W7DrI85X2sVMFuOkMLDkvwDECQH9E\nENKi2f3ssUxHLNQBW53Dni4noK1HCbBJiZCStWdF2c21F2r5TXwv6wgNSGZ9n3mf\n8wTRq6/KFmTx/htBEfECQHfDWbA5hfnpsN3HbAO+Hcv6oBEY7CEOTB2Jcw6jnKR3\n/AT0NXdfaGORivBUiFk6jq1za8KfiXz6ipLzrSnnPZ0=\n-----END RSA PRIVATE KEY-----"]''',
         }
@@ -420,22 +423,22 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
     def test_ec2_hosts_inventory(self):
         # EC2 dynamic inventory should not be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
-        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml'))
         self.assertEqual(r.exit_code, 0)
 
         # assert that no ec2 inventory will be loaded from /etc/ansible/hosts
-        self.assertFalse(os.path.exists("/etc/ansible/hosts/ec2.ini"))
+        self.assertFalse(os.path.exists("/etc/ansible/hosts/aws_ec2.yml"))
         # default vpc_destination_variable should be private_ip_address
         # EC2 dynamic inventory should be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is present
         environment={
             'AWS_ACCESS_KEY_ID': 'foo',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml'))
         self.assertEqual(r.exit_code, 0)
 
-        r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
-        self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable [^_]+private_ip_address'))
+        r = self.drun(cmd="cat /etc/ansible/hosts/aws_ec2.yml")
+        self.assertTrue(self.output_contains(r.output, r'^\s*ansible_host:.*private_ip_address'))
 
         # EC2 dynamic inventory should be used as AWS_INVENTORY=true even if AWS_ACCESS_KEY_ID is not present
         # vpc_destination_variable should be ip_address
@@ -444,11 +447,11 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'EC2_VPC_DESTINATION_VARIABLE': 'ip_address',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml'))
         self.assertEqual(r.exit_code, 0)
 
-        r = self.drun(cmd="cat /etc/ansible/hosts/ec2.ini")
-        self.assertTrue(self.output_contains(r.output, '^vpc_destination_variable [^_]+ip_address'))
+        r = self.drun(cmd="cat /etc/ansible/hosts/aws_ec2.yml")
+        self.assertTrue(self.output_contains(r.output, r'^\s*ansible_host:.*ip_address'))
 
         # EC2 dynamic inventory should not be used as AWS_INVENTORY=false even if AWS_ACCESS_KEY_ID is present
         environment={
@@ -456,14 +459,14 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AWS_ACCESS_KEY_ID': 'foo',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml'))
         self.assertEqual(r.exit_code, 0)
 
     def test_azure_hosts_inventory(self):
         # Azure dynamic inventory should not be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is not present
         r = self.drun(cmd="/usr/bin/ansible-runner")
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
-        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml'))
         self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and AZURE_SUBSCRIPTION_ID is present
@@ -471,8 +474,8 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'AZURE_SUBSCRIPTION_ID': 'foo',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        if float(self.ansible_version) >= 2.8:
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+        if version.parse(self.ansible_version) >= version.parse("2.8"):
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml'))
         else:
             self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEqual(r.exit_code, 0)
@@ -483,9 +486,9 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        if float(self.ansible_version) >= 2.8:
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
-            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+        if version.parse(self.ansible_version) >= version.parse("2.8"):
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml'))
+            r = self.drun(cmd="cat /etc/ansible/hosts/azure_rm.yml")
             self.assertTrue(self.output_contains(r.output, '^plain_host_names:.*true'))
             # default ANSIBLE_PLUGIN_AZURE_HOST
             self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*private_ipv4_addresses \+ public_dns_hostnames \+ public_ipv4_addresses'))
@@ -494,7 +497,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory configuration
-        if float(self.ansible_version) >= 2.8:
+        if version.parse(self.ansible_version) >= version.parse("2.8"):
             # Override ANSIBLE_PLUGIN_AZURE_HOST
             environment={
                 'AZURE_INVENTORY': 'true',
@@ -504,7 +507,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                 'DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST': 'bli',
             }
             self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+            r = self.drun(cmd="cat /etc/ansible/hosts/azure_rm.yml")
             self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*foo'))
 
             # AZURE_USE_PRIVATE_IP true
@@ -515,7 +518,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                 'DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST': 'bli',
             }
             self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+            r = self.drun(cmd="cat /etc/ansible/hosts/azure_rm.yml")
             self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*bar'))
 
             # AZURE_USE_PRIVATE_IP false
@@ -523,7 +526,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                 'AZURE_INVENTORY': 'true',
             }
             self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-            r = self.drun(cmd="cat /etc/ansible/hosts/default.azure_rm.yml")
+            r = self.drun(cmd="cat /etc/ansible/hosts/azure_rm.yml")
             self.assertTrue(self.output_contains(r.output, '^\s*ansible_host:.*bli'))
 
         # Azure dynamic inventory should not be used as AZURE_INVENTORY=false even if AZURE_SUBSCRIPTION_ID is present
@@ -533,7 +536,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
-        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml'))
+        self.assertFalse(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml'))
         self.assertEqual(r.exit_code, 0)
 
     def test_gcp_hosts_inventory(self):
@@ -589,12 +592,12 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         # Azure
-        if float(self.ansible_version) >= 2.8:
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.azure_rm.yml.*-i /etc/ansible/hosts/ec2.py'))
+        if version.parse(self.ansible_version) >= version.parse("2.8"):
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml.*-i /etc/ansible/hosts/aws_ec2.yml'))
         else:
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py.*-i /etc/ansible/hosts/ec2.py'))
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py.*-i /etc/ansible/hosts/aws_ec2.yml'))
         # AWS
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/ec2.py'))
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml'))
         # GCP
         self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
         self.assertEqual(r.exit_code, 0)
@@ -670,10 +673,11 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             'DEBUG': 'true',
         }
         r = self.drun(cmd="/usr/bin/ansible-cli", environment=environment)
-        if float(self.ansible_version) >= 2.8:
-            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/default.azure_rm.yml.*-i /etc/ansible/hosts/ec2.py'), msg=r.output)
+
+        if version.parse(self.ansible_version) >= version.parse("2.8"):
+            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/azure_rm.yml.*-i /etc/ansible/hosts/aws_ec2.yml'), msg=r.output)
         else:
-            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/azure_rm.py.*-i /etc/ansible/hosts/ec2.py'))
+            self.assertTrue(self.output_contains(r.output, '.*-i /etc/ansible/hosts/azure_rm.py.*-i /etc/ansible/hosts/aws_ec2.yml'))
 
 class CycloidCliTestCase(TestCase):
 

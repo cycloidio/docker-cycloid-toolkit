@@ -347,7 +347,7 @@ shared:
 ```bash
 export IMAGE_NAME="cycloid/cycloid-toolkit:develop"
 export PYTHON_VERSION=3
-export ANSIBLE_VERSION=2.9.*
+export ANSIBLE_VERSION=8.*
 docker build -t $IMAGE_NAME --build-arg=PYTHON_VERSION="$PYTHON_VERSION" --build-arg=ANSIBLE_VERSION="$ANSIBLE_VERSION" .
 
 virtualenv -p python3 --clear .env

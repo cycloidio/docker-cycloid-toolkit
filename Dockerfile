@@ -1,13 +1,19 @@
 # Pull base image
-FROM alpine:3.15
+FROM alpine:3.18
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
 ARG PYTHON_VERSION=3
-ARG ANSIBLE_VERSION=2.*
+ARG ANSIBLE_VERSION=8.*
 
 ADD requirements.txt /opt/
 ADD requirements-vmware.txt /opt/
+
+# Ansible Inventory galaxy collections
+#   * Aws https://github.com/ansible-collections/amazon.aws#installing-this-collection
+#   * GCP https://github.com/ansible-collections/google.cloud#installation
+#   * Azure https://github.com/ansible-collections/azure#requirements
+#   * Note: The if condition ensure we run this command only on Ansible version 2.9 and above. As collection is not available before.
 
 # Base packages
 RUN ln -s /lib /lib64 \
@@ -16,6 +22,7 @@ RUN ln -s /lib /lib64 \
             bash \
             sed \
             git \
+            coreutils \
             sudo \
             curl \
             zip \
@@ -63,7 +70,9 @@ RUN ln -s /lib /lib64 \
         pip${PYTHON_VERSION} install pip --upgrade && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
         pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt && \
-        pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} \
+        pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} && \
+        ansible-galaxy collection install google.cloud ansible.windows azure.azcollection amazon.aws --force && \
+        pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements-azure.txt \
     && \
         ln -s $(which python${PYTHON_VERSION}) /bin/python \
     && \
@@ -113,10 +122,5 @@ RUN wget -O changie.tar.gz https://github.com/miniscruff/changie/releases/downlo
     && chmod +x changie \
     && mv changie /usr/local/bin/changie
 
-# Contain ec2.py dynamic inventory from https://github.com/ansible-collections/community.aws/tree/main/scripts/inventory or https://github.com/ansible/ansible/blob/stable-2.9/contrib/inventory/ec2.py
 COPY files/ansible /etc/ansible/
 COPY scripts/* /usr/bin/
-
-# Install Ansible galaxy collections
-# Note: The if condition ensure we run this command only on Ansible version 2.9 and above. As collection is not available before.
-RUN if [[ "$( echo -e "${ANSIBLE_VERSION}\n2.8\n" | sed -r 's/^([0-9]+\.[0-9]+).*$/\1/g' | sort -V | tail -n1)" != "2.8" ]]; then ansible-galaxy collection install google.cloud ansible.windows; fi
