@@ -1,4 +1,4 @@
-plugin: azure_rm
+plugin: azure.azcollection.azure_rm
 
 # The following host variables are always available:
 # public_ipv4_addresses: all public IP addresses, with the primary IP config from the primary NIC first
