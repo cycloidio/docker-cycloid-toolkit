@@ -56,23 +56,23 @@ ansible-common:
 
 ec2 vars:
   * `(AWS_INVENTORY)`: If the Amazon EC2 dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AWS_ACCESS_KEY_ID` is set or not. Default: `auto`.
-  * `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory
-  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory
+  * `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory or `CY_AWS_CRED` to use Cycloid credential format
+  * `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory or `CY_AWS_CRED` to use Cycloid credential format
   * `(EC2_VPC_DESTINATION_VARIABLE)`: Can be either `ip_address` for public ip address or `private_ip_address`, see [ec2.ini](https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini). Default: `private_ip_address`.
 
 azure_rm vars:
   * `(AZURE_INVENTORY)`: If the Azure dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AZURE_SUBSCRIPTION_ID` is set or not. Default: `auto`.
-  * `(AZURE_SUBSCRIPTION_ID)`: Used by Azure dynamic inventory
-  * `(AZURE_TENANT_ID)`: Used by Azure dynamic inventory
-  * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory
-  * `(AZURE_SECRET)`: Used by Azure dynamic inventory
+  * `(AZURE_SUBSCRIPTION_ID)`: Used by Azure dynamic inventory or `CY_AZURE_CRED` to use Cycloid credential format
+  * `(AZURE_TENANT_ID)`: Used by Azure dynamic inventory or `CY_AZURE_CRED` to use Cycloid credential format
+  * `(AZURE_CLIENT_ID)`: Used by Azure dynamic inventory or `CY_AZURE_CRED` to use Cycloid credential format
+  * `(AZURE_SECRET)`: Used by Azure dynamic inventory or `CY_AZURE_CRED` to use Cycloid credential format
   * `(AZURE_USE_PRIVATE_IP)`: Can be either `True` or `False`, see [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py). Default: `True`.
   * `(ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES)`: By default this plugin will use globally unique host names. This option allows you to override that, and use the name that matches the old inventory script naming.. Default: `False`.
   note: Ansible `azure_rm` plugin is used for ansible `>= 2.8` else `azure_rm.py` script will be used
 
 gcp_compute vars:
   * `(GCP_INVENTORY)`: If the GCP dynamic inventory needs to be used or not, can be either `true`, `false` or `auto`. `auto` checks if `GCP_SERVICE_ACCOUNT_CONTENTS` is set or not. Default: `auto`.
-  * `(GCP_SERVICE_ACCOUNT_CONTENTS)`: Used by GCP dynamic inventory. The GCP Service Account in JSON format.
+  * `(GCP_SERVICE_ACCOUNT_CONTENTS)`: Used by GCP dynamic inventory. The GCP Service Account in JSON format. or `CY_GCP_CRED` to use Cycloid credential format
   * `(GCP_USE_PRIVATE_IP)`: Can be either `True` or `False`. Default: `True`.
 
 vmware_vm_inventory vars:
