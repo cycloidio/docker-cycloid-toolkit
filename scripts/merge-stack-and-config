@@ -28,6 +28,7 @@ export MERGE_OUTPUT_PATH="${MERGE_OUTPUT_PATH:-merged-stack}"
 export STACK_ROOT_PATH="${STACK_ROOT_PATH:-stack}"
 export CONFIG_ROOT_PATH="${CONFIG_ROOT_PATH:-config}"
 export TERRAFORM_METADATA_FILE="${TERRAFORM_METADATA_FILE:-terraform/metadata}"
+export TERRAFORM_DEFAULT_METADATA_FILE="${TERRAFORM_DEFAULT_METADATA_FILE:-tfstate/metadata}"
 export RSYNC_ARGS="${RSYNC_ARGS:---exclude=.git}"
 
 # Add '' at the end of the path to ensure it always contain a trailing / for rsync
@@ -40,6 +41,12 @@ if [ -n "$DEBUG" ]; then
   set -x
 fi
 
+if ! [ -f "$TERRAFORM_METADATA_FILE" ]; then
+    if [ -f "$TERRAFORM_DEFAULT_METADATA_FILE" ]; then
+        echo "$0 - Warning: the Terraform output file '${TERRAFORM_METADATA_FILE}' does not exist. Fallback to default '${TERRAFORM_DEFAULT_METADATA_FILE}'"
+        TERRAFORM_METADATA_FILE="${TERRAFORM_DEFAULT_METADATA_FILE}"
+    fi
+fi
 
 echo "############ Merging : ${FULL_STACK_PATH} <- ${FULL_CONFIG_PATH}"
 
