@@ -62,6 +62,23 @@ versionIsHigher() {
   printf '%s\n%s' "$1" "$2" | sort -rC -V
 }
 
+# Allow usage of Cycloid creds for cloud provider access
+if [ -n "$CY_AWS_CRED" ]; then
+    export AWS_ACCESS_KEY_ID=$(echo $CY_AWS_CRED | jq -r .access_key)
+    export AWS_SECRET_ACCESS_KEY=$(echo $CY_AWS_CRED | jq -r .secret_key)
+fi
+
+if [ -n "$CY_AZURE_CRED" ]; then
+    export AZURE_SUBSCRIPTION_ID=$(echo $CY_AZURE_CRED | jq -r .subscription_id)
+    export AZURE_TENANT_ID=$(echo $CY_AZURE_CRED | jq -r .tenant_id)
+    export AZURE_CLIENT_ID=$(echo $CY_AZURE_CRED | jq -r .client_id)
+    export AZURE_SECRET=$(echo $CY_AZURE_CRED | jq -r .client_secret)
+fi
+
+if [ -n "$CY_GCP_CRED" ]; then
+    export GCP_SERVICE_ACCOUNT_CONTENTS=$(echo $CY_GCP_CRED | jq -r .json_key)
+fi
+
 # actionnable callback is now deprecated: ERROR! [DEPRECATED]: community.general.actionable has been removed. Use the 'default' callback plugin with 'display_skipped_hosts = no' and 'display_ok_hosts = no' options. This feature was removed from community.general in version 2.0.0. Please update your playbooks.
 # In order to keep a backward compatibility using the suggested variables with the default callback
 if [ "$ANSIBLE_STDOUT_CALLBACK" == "actionable" ]; then
