@@ -35,8 +35,6 @@ export AWS_EC2_TEMPLATE_FILE="${AWS_EC2_TEMPLATE_FILE:-/etc/ansible/hosts-templa
 export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST:-"(public_dns_hostnames + public_ipv4_addresses + private_ipv4_addresses) | first"}"
 export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE:-"(private_ipv4_addresses + public_dns_hostnames + public_ipv4_addresses) | first"}"
 export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
-# Make sure args work for Ansible azure rm and https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py
-export AZURE_TENANT="${AZURE_TENANT:-$AZURE_TENANT_ID}"
 export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
 export AZURE_TEMPLATE_FILE="${AZURE_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.azure_rm.yml.template}"
 export ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES="${ANSIBLE_PLUGIN_AZURE_PLAIN_HOST_NAMES:-False}"
@@ -74,6 +72,9 @@ if [ -n "$CY_AZURE_CRED" ]; then
     export AZURE_CLIENT_ID=$(echo $CY_AZURE_CRED | jq -r .client_id)
     export AZURE_SECRET=$(echo $CY_AZURE_CRED | jq -r .client_secret)
 fi
+# Depending of Azure tool you use, sometime it request for AZURE_TENANT_ID and sometime for AZURE_TENANT. So providing both
+# Make sure args work for Ansible azure rm and https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py
+export AZURE_TENANT="${AZURE_TENANT:-$AZURE_TENANT_ID}"
 
 if [ -n "$CY_GCP_CRED" ]; then
     export GCP_SERVICE_ACCOUNT_CONTENTS=$(echo $CY_GCP_CRED | jq -r .json_key)
