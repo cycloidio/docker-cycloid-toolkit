@@ -1,19 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from collections.abc import Callable
 import os
 from os.path import join as osjoin
+from typing import Generator, Tuple
 import unittest
-import json
 import shutil
-import os, sys
-import subprocess
-from distutils.util import strtobool
-import time
 import re
+from docker.models.containers import ExecResult
+from docker.utils.build import tempfile
 from packaging import version
 
 import docker
+from requests import options
 
 
 # Run tests :
