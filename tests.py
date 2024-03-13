@@ -28,20 +28,22 @@ from requests import options
 
 
 class TestCase(unittest.TestCase):
-
-    def drun(self, *args, **kwargs):
-        kwargs['tty'] = True
-        kwargs['stdin'] = True
+    # Inject the type annotation to the next function
+    def drun(self, *args, **kwargs) -> ExecResult:
+        kwargs["tty"] = True
+        kwargs["stdin"] = True
         return self.container.exec_run(*args, **kwargs)
 
     def file_list(self, path):
         r = self.drun(cmd="find %s -type f -printf '%%P\n'" % path)
-        return sorted([line for line in r.output.decode('utf-8').split('\r\n') if line != ''])
+        return sorted(
+            [line for line in r.output.decode("utf-8").split("\r\n") if line != ""]
+        )
 
     def output_contains(self, output, pattern):
         p = re.compile(pattern)
 
-        for line in output.decode('utf-8').split('\r\n'):
+        for line in output.decode("utf-8").split("\r\n"):
             if p.match(line):
                 return True
         return False
