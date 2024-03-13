@@ -487,7 +487,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 
         # assert that no ec2 inventory will be loaded from /etc/ansible/hosts
         self.assertFalse(os.path.exists("/etc/ansible/hosts/aws_ec2.yml"))
-        # default vpc_destination_variable should be private_ip_address
+
         # EC2 dynamic inventory should be used as AWS_INVENTORY default to auto and AWS_ACCESS_KEY_ID is present
         environment = {
             "AWS_ACCESS_KEY_ID": "foo",
@@ -501,9 +501,19 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/aws_ec2.yml")
+        
+        # default vpc_destination_variable should be private_ip_address
         self.assertTrue(
             self.output_contains(r.output, r"^\s*ansible_host:.*private_ip_address")
         )
+
+        # EC2 dynamic inventory should be used as CY_AWS_CRED is present
+        environment={
+            'CY_AWS_CRED': '{"access_key":"((redacted))","secret_key":"((redacted))"}',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml'))
+        self.assertEqual(r.exit_code, 0)
 
         # EC2 dynamic inventory should be used as AWS_INVENTORY=true even if AWS_ACCESS_KEY_ID is not present
         # vpc_destination_variable should be ip_address
@@ -571,6 +581,17 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
                     ".*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py",
                 )
             )
+        self.assertEqual(r.exit_code, 0)
+
+        # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and CY_AZURE_CRED is present
+        environment={
+            'CY_AZURE_CRED': '{"client_id":"((redacted))","client_secret":"((redacted))","subscription_id":"((redacted))","tenant_id":"((redacted))"}',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        if version.parse(self.ansible_version) >= version.parse("2.8"):
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml'))
+        else:
+            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
         self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY=true even if AZURE_SUBSCRIPTION_ID is not present
@@ -668,7 +689,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 
         # assert that no GCP inventory will be loaded from /etc/ansible/hosts
         self.assertFalse(os.path.exists("/etc/ansible/hosts/default.gcp_compute.yml"))
-        # default GCP ansible_host should be to networkInterfaces[0].networkIP because of GCP_USE_PRIVATE_IP
+
         # GCP dynamic inventory should be used as GCP_INVENTORY default to auto and GCP_SERVICE_ACCOUNT_CONTENTS is present
         environment = {
             "GCP_SERVICE_ACCOUNT_CONTENTS": '{"project_id": "myproject"}',
@@ -682,6 +703,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         )
         self.assertEqual(r.exit_code, 0)
 
+        # default GCP ansible_host should be to networkInterfaces[0].networkIP because of GCP_USE_PRIVATE_IP
         r = self.drun(cmd="cat /etc/ansible/hosts/default.gcp_compute.yml")
         self.assertTrue(
             self.output_contains(
@@ -689,6 +711,14 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             )
         )
         self.assertTrue(self.output_contains(r.output, '.*- "myproject"'))
+
+        # GCP dynamic inventory should be used as GCP_INVENTORY default to auto and CY_GCP_CRED is present
+        environment={
+            'CY_GCP_CRED': '{"json_key":"{   \\"type\\": \\"service_account\\" }"}',
+        }
+        r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
+        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
+        self.assertEqual(r.exit_code, 0)
 
         # GCP dynamic inventory should be used as AWS_INVENTORY=true even if GCP_SERVICE_ACCOUNT_CONTENTS is not present
         # force GCP ansible_host to natIP using GCP_USE_PRIVATE_IP
