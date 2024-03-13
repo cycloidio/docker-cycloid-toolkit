@@ -24,6 +24,7 @@
           name = "default";
           nativeBuildInputs = with pkgs; [
             watchexec
+            just
             (python311.withPackages (p: with p; [
               ipython
               packaging
