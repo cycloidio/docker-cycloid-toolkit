@@ -17,79 +17,79 @@ ADD requirements-vmware.txt /opt/
 
 # Base packages
 RUN ln -s /lib /lib64 \
+    && \
+      apk --upgrade add --no-cache \
+        bash \
+        sed \
+        git \
+        coreutils \
+        sudo \
+        curl \
+        zip \
+        jq \
+        xmlsec \
+        yaml \
+        ipcalc \
+        libc6-compat \
+        libxml2 \
+        py${PYTHON_VERSION}-lxml \
+        py${PYTHON_VERSION}-distutils-extra \
+        pwgen \
+        ncurses \
+        mkpasswd \
+        python${PYTHON_VERSION} \
+        openssl \
+        ca-certificates \
+        openssh-client \
+        rsync \
+        patch \
+        gettext \
+        findutils \
+        bc \
+        tzdata \
+        wget \
+        py-pip \
+        krb5 \
+        google-authenticator \
+    && \
+      update-ca-certificates \
+    && \
+      apk --upgrade add --no-cache --virtual \
+        build-dependencies \
+        build-base \
+        cargo \
+        python${PYTHON_VERSION}-dev \
+        libffi-dev \
+        openssl-dev \
+        linux-headers \
+        libxml2-dev \
+        libxslt-dev \
+        musl-dev \
+        krb5-dev \
+    && \
+      pip${PYTHON_VERSION} install pip --upgrade && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} && \
+      ansible-galaxy collection install google.cloud ansible.windows azure.azcollection amazon.aws --force && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements-azure.txt \
+    && \
+      ln -s $(which python${PYTHON_VERSION}) /bin/python \
+    && \
+      apk del \
+        build-dependencies \
+        build-base \
+        cargo \
+        python${PYTHON_VERSION}-dev \
+        libffi-dev \
+        openssl-dev \
+        linux-headers \
+        libxml2-dev \
+        libxslt-dev \
+        krb5-dev \
+        musl-dev \
   && \
-  apk --upgrade add --no-cache \
-  bash \
-  sed \
-  git \
-  coreutils \
-  sudo \
-  curl \
-  zip \
-  jq \
-  xmlsec \
-  yaml \
-  ipcalc \
-  libc6-compat \
-  libxml2 \
-  py${PYTHON_VERSION}-lxml \
-  py${PYTHON_VERSION}-distutils-extra \
-  pwgen \
-  ncurses \
-  mkpasswd \
-  python${PYTHON_VERSION} \
-  openssl \
-  ca-certificates \
-  openssh-client \
-  rsync \
-  patch \
-  gettext \
-  findutils \
-  bc \
-  tzdata \
-  wget \
-  py-pip \
-  krb5 \
-  google-authenticator \
-  && \
-  update-ca-certificates \
-  && \
-  apk --upgrade add --no-cache --virtual \
-  build-dependencies \
-  build-base \
-  cargo \
-  python${PYTHON_VERSION}-dev \
-  libffi-dev \
-  openssl-dev \
-  linux-headers \
-  libxml2-dev \
-  libxslt-dev \
-  musl-dev \
-  krb5-dev \
-  && \
-  pip${PYTHON_VERSION} install pip --upgrade && \
-  pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
-  pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt && \
-  pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} && \
-  ansible-galaxy collection install google.cloud ansible.windows azure.azcollection amazon.aws --force && \
-  pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements-azure.txt \
-  && \
-  ln -s $(which python${PYTHON_VERSION}) /bin/python \
-  && \
-  apk del \
-  build-dependencies \
-  build-base \
-  cargo \
-  python${PYTHON_VERSION}-dev \
-  libffi-dev \
-  openssl-dev \
-  linux-headers \
-  libxml2-dev \
-  libxslt-dev \
-  krb5-dev \
-  musl-dev \
-  && \
-  rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/*
 
 ADD files/ssh /root/.ssh
 RUN chmod -R 600 /root/.ssh
