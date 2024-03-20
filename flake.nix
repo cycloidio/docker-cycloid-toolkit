@@ -17,15 +17,16 @@
 
       forAllSystems = fn:
         nixpkgs.lib.genAttrs allSystems
-        (system: fn { pkgs = import nixpkgs { inherit system; }; });
-    in {
+          (system: fn { pkgs = import nixpkgs { inherit system; }; });
+    in
+    {
       devShells = forAllSystems ({ pkgs }: {
         default = pkgs.mkShell {
           name = "default";
           nativeBuildInputs = with pkgs; [
             watchexec
             just
-            (python311.withPackages (p: with p; [
+            (python310.withPackages (p: with p; [
               ipython
               packaging
               pytest
