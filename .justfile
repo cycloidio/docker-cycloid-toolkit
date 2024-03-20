@@ -13,8 +13,8 @@ build:
   docker build -t $IMAGE_NAME --build-arg=PYTHON_VERSION="$PYTHON_VERSION" --build-arg=ANSIBLE_VERSION="$ANSIBLE_VERSION" .
 
 # build docker image and run tests
-tests: build
-  python tests.py -v
+tests +test_case="": build
+  python tests.py -v {{test_case}}
 
 # use watchexec to execute `just <command>` when a python file changes
 watch +command:

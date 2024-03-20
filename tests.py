@@ -1,20 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from collections.abc import Callable
 import os
-from os.path import join as osjoin
-from typing import Generator, Tuple
-import unittest
-import shutil
 import re
-from docker.models.containers import ExecResult
-from docker.utils.build import tempfile
-from packaging import version
+import shutil
+import unittest
+from os.path import join as osjoin
 
 import docker
-from requests import options
-
+from docker.models.containers import Container, ExecResult
+from docker.utils.build import tempfile
+from packaging import version
 
 # Run tests :
 # virtualenv -p python3 --clear .env
@@ -282,23 +278,23 @@ class MergeStackAndConfigTestCase(TestCase):
         r = self.drun(
             cmd=(
                 f"bash -c 'git init {tmpdir}/stack &&"
-                f" echo stack > {tmpdir}/stack/file &&"
-                f" git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git config user.name John &&"
-                f" git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git config user.email john@doe.org &&"
-                f" git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git add file &&"
-                f" git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git add file &&"
-                f" git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git commit -m tests'"
+                f"echo stack > {tmpdir}/stack/file &&"
+                f"git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git config user.name John &&"
+                f"git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git config user.email john@doe.org &&"
+                f"git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git add file &&"
+                f"git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git add file &&"
+                f"git --work-tree={tmpdir}/stack  --git-dir={tmpdir}/stack/.git commit -m tests'"
             )
         )
         r = self.drun(
             cmd=(
                 f"bash -c 'git init {tmpdir}/config &&"
-                f" echo config > {tmpdir}/config/file &&"
-                f" git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git config user.name John &&"
-                f" git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git config user.email john@doe.org &&"
-                f" git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git add file &&"
-                f" git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git add file &&"
-                f" git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git commit -m tests'"
+                f"echo config > {tmpdir}/config/file &&"
+                f"git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git config user.name John &&"
+                f"git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git config user.email john@doe.org &&"
+                f"git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git add file &&"
+                f"git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git add file &&"
+                f"git --work-tree={tmpdir}/config  --git-dir={tmpdir}/config/.git commit -m tests'"
             )
         )
 
@@ -443,14 +439,15 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertTrue(
             self.output_contains(
                 r.output,
-                f".*ansible-playbook.*-e @{tmpdir}/extra_ansible_args.json",
-            )
+                ".*ansible-playbook.*-e @/tmp/extra_ansible_args.json.*",
+            ),
+            msg=f"found: {r.output.decode('utf-8')}, ansible-playbook command should contain -e @{tmpdir}/extra_ansible_args.json",
         )
         self.assertTrue(self.output_contains(r.output, ".*ansible-playbook.*-vvv"))
         self.assertTrue(self.output_contains(r.output, '.*"msg": "hello 42"'))
         self.assertEqual(r.exit_code, 0)
 
-        r = self.drun(cmd=f"cat {tmpdir}/extra_ansible_args.json")
+        r = self.drun(cmd="cat /tmp/extra_ansible_args.json")
         self.assertTrue(self.output_contains(r.output, ".*bar.+42"))
 
     def test_ssh_jumps_args(self):
@@ -501,18 +498,22 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertEqual(r.exit_code, 0)
 
         r = self.drun(cmd="cat /etc/ansible/hosts/aws_ec2.yml")
-        
+
         # default vpc_destination_variable should be private_ip_address
         self.assertTrue(
             self.output_contains(r.output, r"^\s*ansible_host:.*private_ip_address")
         )
 
         # EC2 dynamic inventory should be used as CY_AWS_CRED is present
-        environment={
-            'CY_AWS_CRED': '{"access_key":"((redacted))","secret_key":"((redacted))"}',
+        environment = {
+            "CY_AWS_CRED": '{"access_key":"((redacted))","secret_key":"((redacted))"}',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml'))
+        self.assertTrue(
+            self.output_contains(
+                r.output, ".*ansible-playbook.*-i /etc/ansible/hosts/aws_ec2.yml"
+            )
+        )
         self.assertEqual(r.exit_code, 0)
 
         # EC2 dynamic inventory should be used as AWS_INVENTORY=true even if AWS_ACCESS_KEY_ID is not present
@@ -584,14 +585,22 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY defaults to auto and CY_AZURE_CRED is present
-        environment={
-            'CY_AZURE_CRED': '{"client_id":"((redacted))","client_secret":"((redacted))","subscription_id":"((redacted))","tenant_id":"((redacted))"}',
+        environment = {
+            "CY_AZURE_CRED": '{"client_id":"((redacted))","client_secret":"((redacted))","subscription_id":"((redacted))","tenant_id":"((redacted))"}',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         if version.parse(self.ansible_version) >= version.parse("2.8"):
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml'))
+            self.assertTrue(
+                self.output_contains(
+                    r.output, ".*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.yml"
+                )
+            )
         else:
-            self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py'))
+            self.assertTrue(
+                self.output_contains(
+                    r.output, ".*ansible-playbook.*-i /etc/ansible/hosts/azure_rm.py"
+                )
+            )
         self.assertEqual(r.exit_code, 0)
 
         # Azure dynamic inventory should be used as AZURE_INVENTORY=true even if AZURE_SUBSCRIPTION_ID is not present
@@ -713,11 +722,16 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
         self.assertTrue(self.output_contains(r.output, '.*- "myproject"'))
 
         # GCP dynamic inventory should be used as GCP_INVENTORY default to auto and CY_GCP_CRED is present
-        environment={
-            'CY_GCP_CRED': '{"json_key":"{   \\"type\\": \\"service_account\\" }"}',
+        environment = {
+            "CY_GCP_CRED": '{"json_key":"{   \\"type\\": \\"service_account\\" }"}',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
-        self.assertTrue(self.output_contains(r.output, '.*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml'))
+        self.assertTrue(
+            self.output_contains(
+                r.output,
+                ".*ansible-playbook.*-i /etc/ansible/hosts/default.gcp_compute.yml",
+            )
+        )
         self.assertEqual(r.exit_code, 0)
 
         # GCP dynamic inventory should be used as AWS_INVENTORY=true even if GCP_SERVICE_ACCOUNT_CONTENTS is not present
@@ -933,10 +947,30 @@ class CallbackPluginsTestCase(TestCase):
             },
         )
 
+    def test_pluging_is_found(self):
+        r = self.drun(
+            cmd=[
+                "ansible-doc",
+                "-t",
+                "callback",
+                "-l",
+                "--json",
+            ],
+        )
+
+        fail_msg = (
+            "Failer plugin should be available in this list\n%s"
+            % r.output.decode("utf-8")
+        )
+        self.assertTrue(
+            self.output_contains(r.output, ".*failer.*"),
+            msg=f"{fail_msg}",
+        )
+
     def test_plugin_not_enabled(self):
         environment = {}
         r = self.drun(
-            cmd=f"ansible-playbook /opt/no_host_found.yml",
+            cmd="ansible-playbook /opt/no_host_found.yml",
             environment=environment,
         )
         # print("\n=== DEBUG:\n", r.output.decode("utf-8"), f"code: {r.exit_code}")
@@ -950,9 +984,9 @@ class CallbackPluginsTestCase(TestCase):
         )
 
     def test_plugin_enabled_no_host(self):
-        environment = {"ANSIBLE_CALLBACKS_ENABLED": "ansible.legacy.failer"}
+        environment = {"ANSIBLE_CALLBACKS_ENABLED": "failer"}
         r = self.drun(
-            cmd=f"ansible-playbook /opt/no_host_found.yml",
+            cmd="ansible-playbook /opt/no_host_found.yml",
             environment=environment,
         )
         self.assertEqual(
