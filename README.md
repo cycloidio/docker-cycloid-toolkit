@@ -49,6 +49,7 @@ This script use env vars configuration to run ansible playbook with ssh proxy on
   * `(ANSIBLE_FORCE_GALAXY)`: Force to run Ansible galaxy to updated eventual cached ansible roles. Default: `false`.
   * `(ANSIBLE_PLAYBOOK_NAME)`: Name of the ansible playbook to run. Default: `site.yml`.
   * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.
+  * `(ANSIBLE_FAIL_WHEN_NO_HOST)`: Fail when no host is found. Default: `false`.
   * `(DEBUG)`: Run in debug mode
 
 ansible-common:

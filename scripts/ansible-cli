@@ -62,8 +62,6 @@ source /usr/bin/ansible-common.sh
 export ANSIBLE_MODULE=${ANSIBLE_MODULE:-shell}
 export ANSIBLE_TARGET_PATTERN=${ANSIBLE_TARGET_PATTERN:-all}
 
-
-
 echo "######################## Running ansible cli"
 
 ansible --version
