@@ -80,7 +80,12 @@ export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
 export ANSIBLE_FAIL_WHEN_NO_HOST=${ANSIBLE_FAIL_WHEN_NO_HOST:-true}
 
 if [ "${ANSIBLE_FAIL_WHEN_NO_HOST,,}" == "true" ]; then
-  export ANSIBLE_CALLBACKS_ENABLED="failer profile_tasks"
+  if echo -e "2.11\n${ANSIBLE_VERSION}" | sort -rC -V; then
+    echo "Ansible version ${ANSIBLE_VERSION} detected"
+    export ANSIBLE_CALLBACK_WHITELIST="failer,profile_tasks"
+  else
+    export ANSIBLE_CALLBACKS_ENABLED="failer,profile_tasks"
+  fi
 fi
 
 if [ "${ANSIBLE_FORCE_GALAXY,,}" == "true" ]; then
