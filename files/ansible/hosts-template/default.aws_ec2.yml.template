@@ -3,6 +3,9 @@ plugin: amazon.aws.aws_ec2
 compose:
   ansible_host: $AWS_EC2_COMPOSE_ANSIBLE_HOST
 
+# Do not override invalide char such "-" (currently allowed on cycloid project name)
+use_contrib_script_compatible_sanitization: true
+
 keyed_groups:
   # Add hosts to tag_Name_Value groups for each Name/Value tag pair
   - prefix: tag
