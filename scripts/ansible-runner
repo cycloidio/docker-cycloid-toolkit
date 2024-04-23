@@ -28,7 +28,7 @@ usage()
     echo '  * `(ANSIBLE_FORCE_GALAXY)`: Force to run Ansible galaxy to updated eventual cached ansible roles. Default: `false`.'
     echo '  * `(ANSIBLE_PLAYBOOK_NAME)`: Name of the ansible playbook to run. Default: `site.yml`.'
     echo '  * `(ANSIBLE_PLAYBOOK_PATH)`: Path of the ansible playbook to run. Default: `ansible-playbook`.'
-    echo '  * `(ANSIBLE_FAIL_WHEN_NO_HOST)`: Fail when no hosts are available. Default: `false`.'
+    echo '  * `(ANSIBLE_FAIL_WHEN_NO_HOST)`: Fail when no hosts are available. Default: `true`.'
     echo '  * `(DEBUG)`: Run in debug mode'
     echo ''
     echo 'ec2 vars:'
@@ -68,6 +68,7 @@ source /usr/bin/ansible-common.sh
 #
 # Set defaults
 #
+export ANSIBLE_CALLBACK_PLUGIN=failer
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 echo "ANSIBLE_PLAYBOOK_PATH=$ANSIBLE_PLAYBOOK_PATH"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
@@ -76,10 +77,10 @@ export ANSIBLE_FORCE_GALAXY="${ANSIBLE_FORCE_GALAXY:-false}"
 echo "ANSIBLE_FORCE_GALAXY=$ANSIBLE_FORCE_GALAXY"
 export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
 
-export ANSIBLE_FAIL_WHEN_NO_HOST=${ANSIBLE_FAIL_WHEN_NO_HOST:-false}
+export ANSIBLE_FAIL_WHEN_NO_HOST=${ANSIBLE_FAIL_WHEN_NO_HOST:-true}
 
 if [ "${ANSIBLE_FAIL_WHEN_NO_HOST,,}" == "true" ]; then
-  export ANSIBLE_CALLBACKS_ENABLED="failer"
+  export ANSIBLE_CALLBACKS_ENABLED="failer profile_tasks"
 fi
 
 if [ "${ANSIBLE_FORCE_GALAXY,,}" == "true" ]; then
