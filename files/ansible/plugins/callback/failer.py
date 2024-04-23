@@ -1,16 +1,28 @@
+from __future__ import absolute_import, division, print_function
+
+__metaclass__ = type
+
 import sys
 
 from ansible.plugins.callback import CallbackBase
 
+DOCUMENTATION = """
+name: failer
+callback_type: aggregate
+requirements:
+- enable in configuration
+short_description: Make ansible fail when no host found
+description: |+
+  This callback module exits non-zero if\n
+  - No hosts are matched\n
+  - No hosts are reachable\n
+  - No step resulted in ["ok", "failure", "dark", "changed", "skipped"]
+
+options: null
+"""
+
 
 class CallbackModule(CallbackBase):
-    """
-    This callback module exits non-zero if
-    - No hosts are matched
-    - No hosts are reachable
-    - No step resulted in ["ok", "failure", "dark", "changed", "skipped"]
-    """
-
     CALLBACK_VERSION = 2.0
     CALLBACK_TYPE = "aggregate"
     CALLBACK_NAME = "failer"
