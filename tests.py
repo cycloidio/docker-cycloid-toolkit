@@ -968,7 +968,7 @@ class CallbackPluginsTestCase(TestCase):
         )
 
     def test_plugin_not_enabled(self):
-        environment = {}
+        environment = {"ANSIBLE_FAIL_WHEN_NO_HOST": "false"}
         r = self.drun(
             cmd="ansible-playbook /opt/no_host_found.yml",
             environment=environment,
@@ -984,9 +984,13 @@ class CallbackPluginsTestCase(TestCase):
         )
 
     def test_plugin_enabled_no_host(self):
-        environment = {"ANSIBLE_CALLBACKS_ENABLED": "failer"}
+        environment = {
+            # "ANSIBLE_FAIL_WHEN_NO_HOST": "true", # Should be enabled by default
+            "ANSIBLE_PLAYBOOK_NAME": "no_host_found.yml",
+            "ANSIBLE_PLAYBOOK_PATH": "/opt",
+        }
         r = self.drun(
-            cmd="ansible-playbook /opt/no_host_found.yml",
+            cmd="ansible-runner /opt/no_host_found.yml",
             environment=environment,
         )
         self.assertEqual(
@@ -1000,7 +1004,7 @@ class CallbackPluginsTestCase(TestCase):
 
     def test_ansible_runner_plugin_enabled(self):
         environment = {
-            "ANSIBLE_FAIL_WHEN_NO_HOST": "true",
+            # "ANSIBLE_FAIL_WHEN_NO_HOST": "true", # Should be enabled by default
             "ANSIBLE_PLAYBOOK_NAME": "no_host_found.yml",
             "ANSIBLE_PLAYBOOK_PATH": "/opt",
         }
