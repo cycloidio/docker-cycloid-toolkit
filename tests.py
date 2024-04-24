@@ -413,13 +413,18 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
 
     def test_extra_args(self):
         environment = {
+            "ANSIBLE_FAIL_WHEN_NO_HOST": "false",
             "TAGS": '["foo", "bar"]',
         }
         r = self.drun(cmd="/usr/bin/ansible-runner", environment=environment)
         self.assertTrue(
             self.output_contains(r.output, ".*ansible-playbook.*--tags foo,bar")
         )
-        self.assertEqual(r.exit_code, 0)
+        self.assertEqual(r.exit_code, 0,
+            f"\nCode found: {r.exit_code}"
+            f"\nCode expected: 1"
+            f"\nTrace:\n{r.output.decode('utf-8')}",
+                         )
 
         environment = {
             "SKIP_TAGS": '["foo", "bar"]',
