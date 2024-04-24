@@ -1,0 +1,7 @@
+- hosts:
+  - doesnotexists
+  gather_facts: false
+  tasks:
+  - name: test
+    ansible.builtin.debug:
+      msg: "no host found"
