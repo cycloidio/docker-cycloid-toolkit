@@ -61,7 +61,7 @@ class TestCase(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.docker = docker.from_env()
-        self.docker_image = os.environ.get("IMAGE_NAME", "cycloid/cycloid-toolkit")
+        self.docker_image = os.environ.get("IMAGE_NAME", "cycloid/cycloid-toolkit:2.10")
         self.testsdir = f"{tmpdir}/%s" % self.__class__.__name__
         os.makedirs(self.testsdir, mode=0o771, exist_ok=True)
         self.clean_dir()
@@ -968,9 +968,13 @@ class CallbackPluginsTestCase(TestCase):
         )
 
     def test_plugin_not_enabled(self):
-        environment = {"ANSIBLE_FAIL_WHEN_NO_HOST": "false"}
+        environment = {
+            "ANSIBLE_FAIL_WHEN_NO_HOST": "false",
+            "ANSIBLE_PLAYBOOK_NAME": "no_host_found.yml",
+            "ANSIBLE_PLAYBOOK_PATH": "/opt",
+        }
         r = self.drun(
-            cmd="ansible-playbook /opt/no_host_found.yml",
+            cmd="ansible-runner",
             environment=environment,
         )
         # print("\n=== DEBUG:\n", r.output.decode("utf-8"), f"code: {r.exit_code}")
@@ -990,7 +994,7 @@ class CallbackPluginsTestCase(TestCase):
             "ANSIBLE_PLAYBOOK_PATH": "/opt",
         }
         r = self.drun(
-            cmd="ansible-runner /opt/no_host_found.yml",
+            cmd="ansible-runner",
             environment=environment,
         )
         self.assertEqual(

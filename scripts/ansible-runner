@@ -68,7 +68,6 @@ source /usr/bin/ansible-common.sh
 #
 # Set defaults
 #
-export ANSIBLE_CALLBACK_PLUGIN=failer
 export ANSIBLE_PLAYBOOK_PATH="${ANSIBLE_PLAYBOOK_PATH:-ansible-playbook}"
 echo "ANSIBLE_PLAYBOOK_PATH=$ANSIBLE_PLAYBOOK_PATH"
 export ANSIBLE_PLAYBOOK_NAME="${ANSIBLE_PLAYBOOK_NAME:-site.yml}"
@@ -80,12 +79,9 @@ export ANSIBLE_VAULT_PASSWORD="${ANSIBLE_VAULT_PASSWORD:-fake}"
 export ANSIBLE_FAIL_WHEN_NO_HOST=${ANSIBLE_FAIL_WHEN_NO_HOST:-true}
 
 if [ "${ANSIBLE_FAIL_WHEN_NO_HOST,,}" == "true" ]; then
-  if echo -e "2.11\n${ANSIBLE_VERSION}" | sort -rC -V; then
-    echo "Ansible version ${ANSIBLE_VERSION} detected"
-    export ANSIBLE_CALLBACK_WHITELIST="failer,profile_tasks"
-  else
-    export ANSIBLE_CALLBACKS_ENABLED="failer,profile_tasks"
-  fi
+  echo 2>&1 "Enabling failure when no host"
+  export ANSIBLE_CALLBACK_PLUGIN=failer
+  export ANSIBLE_CALLBACKS_ENABLED="failer,profile_tasks"
 fi
 
 if [ "${ANSIBLE_FORCE_GALAXY,,}" == "true" ]; then

@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
+import os
 import sys
 
 from ansible.plugins.callback import CallbackBase
@@ -32,12 +33,22 @@ class CallbackModule(CallbackBase):
     def __init__(self):
         super(CallbackModule, self).__init__()
 
+    def playbook_on_no_hosts_matched(self):
+        self.v2_playbook_on_no_hosts_matched()
+
+    def playbook_on_stats(self, stats):
+        self.v2_playbook_on_stats(stats)
+
+    def runner_on_unreachable(self, host, res):
+        self.v2_runner_on_unreachable()
+
     def v2_runner_on_unreachable(self):
         self._display.display("Failed due to host unreachable")
         sys.exit(1)
 
     def v2_playbook_on_no_hosts_matched(self):
         self._display.display("Failed due to no host matching")
+        # raise AnsibleActionFail("Failed due to no host matching")
         sys.exit(1)
 
     def v2_playbook_on_stats(self, stats):
