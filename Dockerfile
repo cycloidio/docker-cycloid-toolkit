@@ -72,7 +72,7 @@ RUN ln -s /lib /lib64 \
       pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt && \
       pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} && \
       ansible-galaxy collection install google.cloud ansible.windows azure.azcollection amazon.aws --force && \
-      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements-azure.txt \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt \
     && \
       ln -s $(which python${PYTHON_VERSION}) /bin/python \
     && \
