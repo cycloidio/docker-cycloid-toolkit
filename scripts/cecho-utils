@@ -87,3 +87,10 @@ pinfo () {
     cecho -c 'blue' "$@";
     if [[ -n "$xtrace_enabled" ]]; then set -x; else set +x; fi
 }
+
+psuccess () {
+    xtrace_enabled=${-//[^x]/}
+    set +x
+    cecho -c 'green' "$@";
+    if [[ -n "$xtrace_enabled" ]]; then set -x; else set +x; fi
+}
