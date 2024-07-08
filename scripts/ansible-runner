@@ -110,7 +110,11 @@ echo ${ANSIBLE_VAULT_PASSWORD} > $ANSIBLE_PLAYBOOK_PATH/.vault-password
 cd $ANSIBLE_PLAYBOOK_PATH
 
 if [ -f "requirements.yml" ]; then
-    ansible-galaxy install -r requirements.yml --roles-path=roles -v ${ANSIBLE_GALAXY_EXTRA_ARGS}
+    ansible-galaxy role install -r requirements.yml -p roles -v ${ANSIBLE_GALAXY_EXTRA_ARGS}
+    # Install collections if present in the requirements.yml
+    if grep -Eq '^collections:' requirements.yml; then
+      ansible-galaxy collection install -r requirements.yml -p collections -v ${ANSIBLE_GALAXY_EXTRA_ARGS}
+    fi
 fi
 
 echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
