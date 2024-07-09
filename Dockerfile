@@ -4,7 +4,7 @@ LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
 ARG PYTHON_VERSION=3
-ARG ANSIBLE_VERSION=8.*
+ARG ANSIBLE_VERSION=10.*
 
 ADD requirements.txt /opt/
 ADD requirements-vmware.txt /opt/
@@ -67,12 +67,12 @@ RUN ln -s /lib /lib64 \
         musl-dev \
         krb5-dev \
     && \
-      pip${PYTHON_VERSION} install pip --upgrade && \
-      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt && \
-      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt && \
-      pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} && \
+      pip${PYTHON_VERSION} install pip --upgrade --break-system-packages && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements.txt --break-system-packages && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt --break-system-packages && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} --break-system-packages && \
       ansible-galaxy collection install google.cloud ansible.windows azure.azcollection amazon.aws --force && \
-      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt --break-system-packages \
     && \
       ln -s $(which python${PYTHON_VERSION}) /bin/python \
     && \
