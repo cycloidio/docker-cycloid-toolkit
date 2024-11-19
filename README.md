@@ -102,7 +102,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -159,7 +159,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -196,7 +196,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -234,7 +234,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -276,7 +276,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -320,7 +320,7 @@ shared:
   - &merge-stack-and-config
     platform: linux
     image_resource:
-      type: docker-image
+      type: registry-image
       source:
         repository: cycloid/cycloid-toolkit
         tag: latest
