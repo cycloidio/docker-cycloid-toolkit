@@ -20,7 +20,7 @@ run:
       docker inspect $IMAGE_NAME
 
       apk update && apk add -q --no-progress python3 py-pip
-      python3 -m pip install -q -r merged-stack/tests-requirements.txt
+      python3 -m pip install -q --break-system-packages -r merged-stack/tests-requirements.txt
 
       cd merged-stack
       python3 tests.py -vvv
