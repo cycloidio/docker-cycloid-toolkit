@@ -121,6 +121,13 @@ echo "######################## Running ansible playbook $ANSIBLE_PLAYBOOK_NAME"
 
 set -x
 ansible --version
-ansible-playbook -u ${ANSIBLE_REMOTE_USER} --vault-password-file=.vault-password ${ANSIBLE_PLAYBOOK_NAME} -e cycloid_workdir=${CYCLOID_WORKDIR} --diff ${ANSIBLE_EXTRA_ARGS}
+
+USER_PARAM=""
+if [ "${ANSIBLE_REMOTE_USER}" != "empty" ]; then
+  USER_PARAM="-u ${ANSIBLE_REMOTE_USER}"
+else
+  unset ANSIBLE_REMOTE_USER
+fi
+ansible-playbook ${USER_PARAM} --vault-password-file=.vault-password ${ANSIBLE_PLAYBOOK_NAME} -e cycloid_workdir=${CYCLOID_WORKDIR} --diff ${ANSIBLE_EXTRA_ARGS}
 
 exit $?

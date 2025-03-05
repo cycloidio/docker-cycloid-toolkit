@@ -42,7 +42,7 @@ This script use env vars configuration to run ansible playbook with ssh proxy on
   * `(SKIP_TAGS)`: Only run plays and tasks whose tags do not match these values
   * `(EXTRA_ANSIBLE_ARGS)`: Additional ansible-playbook arguments
   * `(EXTRA_ANSIBLE_VARS)`: Ansible extra-vars, set additional variables, json dict format.
-  * `(ANSIBLE_REMOTE_USER)`: Ansible remote user. Default: `admin`.
+  * `(ANSIBLE_REMOTE_USER)`: Ansible remote user. Default: `admin`. Use `empty` to disable ansible user (usefull with AWS SSM).
   * `(ANSIBLE_LIMIT_HOSTS)`: Select a subset of the inventory
   * `(ANSIBLE_GALAXY_EXTRA_ARGS)`: Additional ansible-galaxy arguments
   * `(ANSIBLE_VAULT_PASSWORD)`: Vault password if you use [Ansible Vault](https://docs.ansible.com/ansible/latest/user_guide/vault.html) files
