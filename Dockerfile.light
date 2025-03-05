@@ -18,7 +18,6 @@ RUN apk --upgrade add --no-cache \
         jq \
         libc6-compat \
         gcompat \
-        py${PYTHON_VERSION}-distutils-extra \ # check why maybe remove ?
         pwgen \
         mkpasswd \
         python${PYTHON_VERSION} \
