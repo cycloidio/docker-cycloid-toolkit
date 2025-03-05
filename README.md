@@ -62,7 +62,7 @@ AWS ec2 inventory:
     or
      - `(AWS_ACCESS_KEY_ID)`: Used by Amazon EC2 dynamic inventory
      - `(AWS_SECRET_ACCESS_KEY)`: Used by Amazon EC2 dynamic inventory
-  * `(EC2_VPC_DESTINATION_VARIABLE)`: Can be either `ip_address` for public ip address or `private_ip_address`, see [ec2.ini](https://github.com/ansible/ansible/blob/devel/contrib/inventory/ec2.ini). Default: `private_ip_address`.
+  * `(AWS_EC2_COMPOSE_ANSIBLE_HOST)`: Can be either `public_ip_address` for public ip address or `private_ip_address`, see [ansible_doc](https://docs.ansible.com/ansible/latest/collections/amazon/aw    s/aws_ec2_inventory.html) or run ansible-runner-inventory to see available choices. Default: `private_ip_address`
 
 Azure azure_rm inventory:
   * `(AZURE_INVENTORY)`: If the Azure dynamic inventory need to be used or no, can be eiter `true`, `false` or `auto`. `auto` checks if `AZURE_SUBSCRIPTION_ID` is set or not. Default: `auto`.
@@ -102,7 +102,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -159,7 +159,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -196,7 +196,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -234,7 +234,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -276,7 +276,7 @@ shared:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           repository: cycloid/cycloid-toolkit
           tag: latest
@@ -320,7 +320,7 @@ shared:
   - &merge-stack-and-config
     platform: linux
     image_resource:
-      type: docker-image
+      type: registry-image
       source:
         repository: cycloid/cycloid-toolkit
         tag: latest

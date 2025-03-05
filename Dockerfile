@@ -94,6 +94,7 @@ RUN ln -s /lib /lib64 \
 ADD files/ssh /root/.ssh
 RUN chmod -R 600 /root/.ssh
 
+# TODO maybe deprecated could check to remove this api and ecr things
 # Install ec2 ami cleaner
 RUN git clone https://github.com/cycloidio/aws-amicleaner \
   && cd aws-amicleaner \
