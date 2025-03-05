@@ -1,0 +1,48 @@
+# Pull base image
+FROM alpine:3.18
+LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
+MAINTAINER Cycloid.io
+
+# This docker image is the light version or our toolkit. It contains mainly commandline for basic pipeline automation such as curl/git
+
+ARG PYTHON_VERSION=3
+
+# Base packages
+RUN apk --upgrade add --no-cache \
+        bash \
+        sed \
+        git \
+        coreutils \
+        curl \
+        zip \
+        jq \
+        libc6-compat \
+        gcompat \
+        py${PYTHON_VERSION}-distutils-extra \ # check why maybe remove ?
+        pwgen \
+        mkpasswd \
+        python${PYTHON_VERSION} \
+        openssl \
+        ca-certificates \
+        openssh-client \
+        rsync \
+        findutils \
+        bc \
+        tzdata \
+        wget \
+    && \
+      update-ca-certificates \
+    && \
+    rm -rf /var/cache/apk/*
+
+ADD files/ssh /root/.ssh
+RUN chmod -R 600 /root/.ssh
+
+# Install Cycloid wrapper
+RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/cy-wrapper.sh > /usr/bin/cy \
+  && chmod +x /usr/bin/cy
+
+COPY scripts/cecho-utils /usr/bin/
+COPY scripts/extract-terraform-outputs /usr/bin/
+COPY scripts/merge-stack-and-config /usr/bin/
+COPY scripts/vault-approle-login /usr/bin/
