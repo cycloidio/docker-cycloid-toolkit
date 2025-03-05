@@ -16,9 +16,7 @@ ADD requirements-vmware.txt /opt/
 #   * Note: The if condition ensure we run this command only on Ansible version 2.9 and above. As collection is not available before.
 
 # Base packages
-RUN ln -s /lib /lib64 \
-    && \
-      apk --upgrade add --no-cache \
+RUN apk --upgrade add --no-cache \
         bash \
         sed \
         git \
@@ -30,7 +28,6 @@ RUN ln -s /lib /lib64 \
         xmlsec \
         yaml \
         ipcalc \
-        libc6-compat \
         libxml2 \
         py${PYTHON_VERSION}-lxml \
         py${PYTHON_VERSION}-distutils-extra \
