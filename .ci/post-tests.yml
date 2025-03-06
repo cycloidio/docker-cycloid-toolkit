@@ -23,7 +23,10 @@ run:
       python3 -m pip install -q --break-system-packages -r merged-stack/tests-requirements.txt
 
       cd merged-stack
-      python3 tests.py -vvv
+      # Skip tests for light image because most of the binaries are not present
+      if [[ "$TAG" != "light" ]]; then
+        python3 tests.py -vvv
+      fi
 inputs:
 - name: merged-stack
 - name: image
