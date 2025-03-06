@@ -64,7 +64,14 @@ export ANSIBLE_TARGET_PATTERN=${ANSIBLE_TARGET_PATTERN:-all}
 
 echo "######################## Running ansible cli"
 
+USER_PARAM=""
+if [ "${ANSIBLE_REMOTE_USER}" != "empty" ]; then
+  USER_PARAM="-u ${ANSIBLE_REMOTE_USER}"
+else
+  unset ANSIBLE_REMOTE_USER
+fi
+
 ansible --version
-ansible -e cycloid_workdir=${CYCLOID_WORKDIR} ${ANSIBLE_TARGET_PATTERN} -u ${ANSIBLE_REMOTE_USER} -m ${ANSIBLE_MODULE} ${ANSIBLE_EXTRA_ARGS}
+ansible -e cycloid_workdir=${CYCLOID_WORKDIR} ${ANSIBLE_TARGET_PATTERN} ${USER_PARAM} -m ${ANSIBLE_MODULE} ${ANSIBLE_EXTRA_ARGS}
 
 exit $?
