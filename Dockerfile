@@ -91,6 +91,17 @@ RUN apk --upgrade add --no-cache \
 ADD files/ssh /root/.ssh
 RUN chmod -R 600 /root/.ssh
 
+# Install aws ssm plugin
+# https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-debian-and-ubuntu.html
+# https://github.com/aws/session-manager-plugin/issues/12
+RUN   apk add dpkg gcompat && \
+      curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb" && \
+      dpkg -x  session-manager-plugin.deb session-manager-plugin && \
+      cp session-manager-plugin/usr/local/sessionmanagerplugin/bin/session-manager-plugin  /usr/bin/session-manager-plugin && \
+      chmod +x /usr/bin/session-manager-plugin && \
+      cp /usr/bin/session-manager-plugin /usr/local/bin/session-manager-plugin && \
+      apk del dpkg
+
 # TODO maybe deprecated could check to remove this api and ecr things
 # Install ec2 ami cleaner
 RUN git clone https://github.com/cycloidio/aws-amicleaner \
