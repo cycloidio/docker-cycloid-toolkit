@@ -1,5 +1,5 @@
 # Pull base image
-FROM alpine:3.18
+FROM alpine:3.21
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
@@ -69,6 +69,7 @@ RUN apk --upgrade add --no-cache \
       pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /opt/requirements-vmware.txt --break-system-packages && \
       pip${PYTHON_VERSION} install --upgrade --no-cache-dir ansible==${ANSIBLE_VERSION} --break-system-packages && \
       ansible-galaxy collection install google.cloud ansible.windows azure.azcollection amazon.aws --force && \
+      sed -i 's/^azure-iot-hub.*//g' /root/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt && \
       pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt --break-system-packages \
     && \
       ln -s $(which python${PYTHON_VERSION}) /bin/python \
@@ -106,8 +107,8 @@ RUN   apk add dpkg gcompat && \
 # Install ec2 ami cleaner
 RUN git clone https://github.com/cycloidio/aws-amicleaner \
   && cd aws-amicleaner \
-  && pip${PYTHON_VERSION} install --no-cache-dir -q -e . \
-  && pip${PYTHON_VERSION} install --no-cache-dir -q future \
+  && pip${PYTHON_VERSION} install --break-system-packages --no-cache-dir -q -e . \
+  && pip${PYTHON_VERSION} install --break-system-packages --no-cache-dir -q future \
   && rm -rf .git
 
 # Install ecr image cleaner
@@ -117,15 +118,15 @@ RUN curl https://raw.githubusercontent.com/cycloidio/ecr-cleanup-lambda/master/m
 #TMP fix for https://github.com/boto/boto/issues/3783
 # eu-west-3 region is not supported by boto, we need to override the aws endpoints with the existing new regions
 RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/endpoints.json > /etc/endpoints_new.json \
-  && pip${PYTHON_VERSION} install --no-cache-dir --upgrade boto \
-  && cp /etc/endpoints_new.json $(python${PYTHON_VERSION} -c "import boto; print('%s/endpoints.json' % boto.__path__[0])")
+  && pip${PYTHON_VERSION} install --break-system-packages --no-cache-dir --upgrade boto \
+  && cp /etc/endpoints_new.json $(python${PYTHON_VERSION} -c "import boto3 as boto; print('%s/endpoints.json' % boto.__path__[0])")
 
 # Install Cycloid wrapper
 RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/cy-wrapper.sh > /usr/bin/cy \
   && chmod +x /usr/bin/cy
 
 # Install Changie
-RUN wget -O changie.tar.gz https://github.com/miniscruff/changie/releases/download/v1.7.0/changie_1.7.0_linux_amd64.tar.gz \
+RUN wget -O changie.tar.gz https://github.com/miniscruff/changie/releases/download/v1.21.1/changie_1.21.1_linux_amd64.tar.gz \
   && tar xf changie.tar.gz changie \
   && rm changie.tar.gz \
   && chmod +x changie \
