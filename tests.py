@@ -627,7 +627,7 @@ j/McHvs4QerVnwQYfoRaNpFdQwNxL96tYM5M/5jH
             self.assertTrue(
                 self.output_contains(
                     r.output,
-                    "^\s*ansible_host:.*private_ipv4_addresses \+ public_dns_hostnames \+ public_ipv4_addresses",
+                    "^\s*ansible_host:.*private_ipv4_addresses \+ public_dns_hostnames \+ public_ipv4_address",
                 )
             )
         else:
