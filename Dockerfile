@@ -24,6 +24,7 @@ RUN apk --upgrade add --no-cache \
         sudo \
         curl \
         zip \
+        tar \
         jq \
         xmlsec \
         yaml \
