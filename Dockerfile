@@ -4,7 +4,7 @@ LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
 MAINTAINER Cycloid.io
 
 ARG PYTHON_VERSION=3
-ARG ANSIBLE_VERSION=10.*
+ARG ANSIBLE_VERSION=12.*
 
 ADD requirements.txt /opt/
 ADD requirements-vmware.txt /opt/
