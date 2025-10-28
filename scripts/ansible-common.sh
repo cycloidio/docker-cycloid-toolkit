@@ -32,8 +32,8 @@ export AWS_EC2_COMPOSE_ANSIBLE_HOST="${AWS_EC2_COMPOSE_ANSIBLE_HOST:-private_ip_
 export AWS_EC2_TEMPLATE_FILE="${AWS_EC2_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.aws_ec2.yml.template}"
 
 # Default envvars for azure_rm.py
-export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST:-"(public_dns_hostnames + public_ipv4_addresses + private_ipv4_addresses) | first"}"
-export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE:-"(private_ipv4_addresses + public_dns_hostnames + public_ipv4_addresses) | first"}"
+export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST:-"(public_dns_hostnames + public_ipv4_address + private_ipv4_addresses) | first"}"
+export DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE="${DEFAULT_ANSIBLE_PLUGIN_AZURE_HOST_PRIVATE:-"(private_ipv4_addresses + public_dns_hostnames + public_ipv4_address) | first"}"
 export AZURE_INVENTORY="${AZURE_INVENTORY:-auto}"
 export AZURE_USE_PRIVATE_IP="${AZURE_USE_PRIVATE_IP:-True}"
 export AZURE_TEMPLATE_FILE="${AZURE_TEMPLATE_FILE:-/etc/ansible/hosts-template/default.azure_rm.yml.template}"
@@ -78,6 +78,11 @@ export AZURE_TENANT="${AZURE_TENANT:-$AZURE_TENANT_ID}"
 
 if [ -n "$CY_GCP_CRED" ]; then
     export GCP_SERVICE_ACCOUNT_CONTENTS=$(echo $CY_GCP_CRED | jq -r .json_key)
+fi
+
+if [ -n "$CY_VMWARE_CRED" ]; then
+    export VMWARE_USERNAME=$(echo $CY_VMWARE_CRED | jq -r .username)
+    export VMWARE_PASSWORD=$(echo $CY_VMWARE_CRED | jq -r .password)
 fi
 
 # actionnable callback is now deprecated: ERROR! [DEPRECATED]: community.general.actionable has been removed. Use the 'default' callback plugin with 'display_skipped_hosts = no' and 'display_ok_hosts = no' options. This feature was removed from community.general in version 2.0.0. Please update your playbooks.

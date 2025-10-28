@@ -85,12 +85,15 @@ GCP gcp_compute inventory:
      - `(GCP_SERVICE_ACCOUNT_CONTENTS)`: Used by GCP dynamic inventory. The GCP Service Account in JSON format.
   * `(GCP_USE_PRIVATE_IP)`: Can be either `True` or `False`. Default: `True`.
 
-vmware_vm_inventory vars:
+VMware Guest inventory:
   * `(VMWARE_VM_INVENTORY)`: If the VMware Guest inventory needs to be used or not, can be either `true`, `false` or `auto`. `auto` checks if `VMWARE_SERVER` is set or not. Default: `auto`.
+  * Cloud access used by VMware inventory
+     - `(CY_VMWARE_CRED)`: Use Cycloid VMWARE credential
+    or
+     - `(VMWARE_USERNAME)`: Used by VMware Guest inventory. Name of vSphere user.
+     - `(VMWARE_PASSWORD)`: Used by VMware Guest inventory. Password of vSphere user.
   * `(VMWARE_SERVER)`: Used by VMware Guest inventory. Name or IP address of vCenter server.
   * `(VMWARE_PORT)`: Used by VMware Guest inventory. Service port of vCenter server. Default: 443
-  * `(VMWARE_USERNAME)`: Used by VMware Guest inventory. Name of vSphere user.
-  * `(VMWARE_PASSWORD)`: Used by VMware Guest inventory. Password of vSphere user.
 
 Example of pipeline configuration :
 

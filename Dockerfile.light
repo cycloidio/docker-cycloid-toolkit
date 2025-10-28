@@ -14,6 +14,7 @@ RUN apk --upgrade add --no-cache \
         git \
         coreutils \
         curl \
+        tar \
         zip \
         jq \
         libc6-compat \

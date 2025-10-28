@@ -77,7 +77,7 @@ docker run -v /tmp/ansible-playbook:/tmp/ansible-playbook \
 ## GCP inventory
 
 ```bash
-export GCP_SERVICE_ACCOUNT_CONTENTS=$(vault read -field=json-key secret/cycloid/gcp/cycloid-demo)
+export GCP_SERVICE_ACCOUNT_CONTENTS=$(vault read -field=json_key secret/cycloid/gcp/demo)
 
 docker run -v /tmp/ansible-playbook:/tmp/ansible-playbook \
 -e GCP_SERVICE_ACCOUNT_CONTENTS="$GCP_SERVICE_ACCOUNT_CONTENTS" \
