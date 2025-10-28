@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ -n "$DEBUG" ]; then
+  set -x
+fi
+
 usage()
 {
     echo 'You should provide the following env vars :'
@@ -37,14 +41,20 @@ fi
 
 mkdir -p $(dirname $OUTPUT_ANSIBLE_VAR_FILE)
 echo "############ Extracting Terraform outputs as YAML -> $OUTPUT_ANSIBLE_VAR_FILE"
-python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $TERRAFORM_METADATA_FILE | tee -a $OUTPUT_ANSIBLE_VAR_FILE
+python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' < $TERRAFORM_METADATA_FILE >> $OUTPUT_ANSIBLE_VAR_FILE
+if [ -n "$DEBUG" ]; then
+  cat $OUTPUT_ANSIBLE_VAR_FILE
+fi
 
 mkdir -p $(dirname $OUTPUT_ENV_VAR_FILE)
 echo "############ Extracting Terraform outputs as a shell script -> $OUTPUT_ENV_VAR_FILE"
 
 IFS=$'\n'
 for s in $(cat $TERRAFORM_METADATA_FILE | jq -r 'to_entries|map("\(.key | sub("[^A-z0-9_]"; "_") )=\"\(.value|tostring)\"")|.[]' ); do
-    echo "export $s" | tee -a $OUTPUT_ENV_VAR_FILE
+    echo "export $s" >> $OUTPUT_ENV_VAR_FILE
     export $s
+    if [ -n "$DEBUG" ]; then
+      cat $OUTPUT_ENV_VAR_FILE
+    fi
 done
 unset IFS
