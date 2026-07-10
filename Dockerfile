@@ -133,6 +133,12 @@ RUN wget -O changie.tar.gz https://github.com/miniscruff/changie/releases/downlo
   && chmod +x changie \
   && mv changie /usr/local/bin/changie
 
+# Install linear-release CLI (Linear release ledger, OPS-1541). Upstream ships only a glibc
+# binary (no musl build), so gcompat is required to run it on Alpine.
+RUN apk add --no-cache gcompat \
+  && wget -O /usr/local/bin/linear-release https://github.com/linear/linear-release/releases/download/v0.14.3/linear-release-linux-x64 \
+  && chmod +x /usr/local/bin/linear-release
+
 COPY files/ansible/etc /etc/ansible/
 COPY files/ansible/plugins/callback/* /usr/share/ansible/plugins/callback/
 COPY scripts/* /usr/bin/
