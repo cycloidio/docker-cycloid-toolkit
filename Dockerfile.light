@@ -39,7 +39,7 @@ ADD files/ssh /root/.ssh
 RUN chmod -R 600 /root/.ssh
 
 # Install Cycloid wrapper
-RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/cy-wrapper.sh > /usr/bin/cy \
+RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/develop/cy-wrapper.sh > /usr/bin/cy \
   && chmod +x /usr/bin/cy
 
 COPY scripts/cecho-utils /usr/bin/
