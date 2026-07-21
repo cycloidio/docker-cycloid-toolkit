@@ -123,7 +123,7 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
   && cp /etc/endpoints_new.json $(python${PYTHON_VERSION} -c "import boto3 as boto; print('%s/endpoints.json' % boto.__path__[0])")
 
 # Install Cycloid wrapper
-RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/master/scripts/cy-wrapper.sh > /usr/bin/cy \
+RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/develop/cy-wrapper.sh > /usr/bin/cy \
   && chmod +x /usr/bin/cy
 
 # Install Changie
