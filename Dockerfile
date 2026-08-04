@@ -1,3 +1,8 @@
+# Build changie from source: the upstream release binary is compiled with Go 1.25.0,
+# which still carries HIGH/CRITICAL stdlib CVEs. Recompiling with a patched Go clears them.
+FROM golang:1.25-alpine AS changie
+RUN go install github.com/miniscruff/changie@v1.25.2
+
 # Pull base image
 FROM alpine:3.21
 LABEL Description="Cycloid toolkit" Vendor="Cycloid.io" Version="1.0"
@@ -73,6 +78,9 @@ RUN apk --upgrade add --no-cache \
       sed -i 's/^azure-iot-hub.*//g' /root/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt && \
       pip${PYTHON_VERSION} install --upgrade --no-cache-dir -r /root/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt --break-system-packages \
     && \
+      pip${PYTHON_VERSION} install --upgrade --no-cache-dir --break-system-packages \
+        'cryptography>=50.0.0' 'setuptools>=78.1.1' 'msgpack>=1.2.1' \
+    && \
       ln -s $(which python${PYTHON_VERSION}) /bin/python \
     && \
       apk del \
@@ -126,12 +134,8 @@ RUN curl https://raw.githubusercontent.com/aws/aws-sdk-net/master/sdk/src/Core/e
 RUN curl https://raw.githubusercontent.com/cycloidio/cycloid-cli/develop/cy-wrapper.sh > /usr/bin/cy \
   && chmod +x /usr/bin/cy
 
-# Install Changie
-RUN wget -O changie.tar.gz https://github.com/miniscruff/changie/releases/download/v1.21.1/changie_1.21.1_linux_amd64.tar.gz \
-  && tar xf changie.tar.gz changie \
-  && rm changie.tar.gz \
-  && chmod +x changie \
-  && mv changie /usr/local/bin/changie
+# Install Changie (compiled from source, see builder stage above)
+COPY --from=changie /go/bin/changie /usr/local/bin/changie
 
 # Install linear-release CLI (Linear release ledger, OPS-1541). Upstream ships only a glibc
 # binary (no musl build), so gcompat is required to run it on Alpine.
